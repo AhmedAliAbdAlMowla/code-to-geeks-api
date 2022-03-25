@@ -1,0 +1,19 @@
+#main-container{
+    width: 59%;
+    padding-left:  60px;
+    padding-right: 60px;
+}
+
+code{
+    border-radius: 0.375rem;
+}
+
+.slug-container{
+margin-top: 20px;
+margin-bottom: 30px;
+}
+
+.slug-container h1{
+    font-weight: bold;
+
+    }
