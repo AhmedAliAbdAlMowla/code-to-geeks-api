@@ -3,9 +3,12 @@
  * @desc     error middleware
  */
 module.exports =  (err, req, res, next) => {
-  // console.log(err);
-  res.status(400).json({
+  if (err.type === "database") 
+       err.message = err.message;//.substring(0, 20) + "[ DB ERROE ]";
+   
+ return  res.status(400).json({
+   
     message: err.message,
   });
-  next();
+  
 };

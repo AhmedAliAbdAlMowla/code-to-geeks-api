@@ -9,28 +9,13 @@ const notfound = require("./middlewares/notFound");
 // logger
 app.use(logger("dev"));
 
-
-
 // config
 require("./config/config")();
 
+// swagger
+require("./startup/swagger")(app);
+
 require("express-async-errors"); // for error handeler async
-
-//  parser middleware
-app.use(express.json());
-app.use(
-  express.urlencoded({
-    extended: false,
-  })
-);
-app.use(express.static(__dirname + "/public"));
-//  set view engine
-app.set("view engine", "ejs");
-app.set("views", __dirname + "/views");
-
-
-// DB Config
-require("./startup/db")();
 
 // core
 app.use(cors(corsOptions));

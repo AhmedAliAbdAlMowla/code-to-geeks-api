@@ -6,11 +6,21 @@ const Joi = require("joi");
  */
 module.exports.Create = (tag) => {
   const schema = Joi.object({
- 
     name:Joi.string().max(60).min(2).required(),
     description: Joi.string().required(),
-    author:  Joi.string().max(40).required(),
-    color: Joi.string().max(20).min(2).required(),
+    color: Joi.string().max(10).min(2).required(),
+  
+  });
+
+  return schema.validate(tag);
+};
+
+
+module.exports.Update = (tag) => {
+  const schema = Joi.object({
+    name:Joi.string().max(60).min(2),
+    description: Joi.string(),
+    color: Joi.string().max(10).min(2),
   
   });
 

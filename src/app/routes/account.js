@@ -1,6 +1,19 @@
+"use strict"
 const router = require("express").Router();
-const account_controller = require("../controllers/account");
-router.post("/login", account_controller.login);
+const multer = require("../config/multer");
+const accountController = require("../controllers/account");
+const auth = require("../middlewares/auth");
 
+// // get user profile data
+router.get("/", auth, accountController.getAccountData);
 
-module.exports =router;
+ // update user profile data
+router.patch("/", auth, accountController.updateAccount);
+
+// upload profile image
+router.post("/profile/image", auth, multer.single("file"), accountController.uploadProfileImage )
+
+ // get account profile image
+router.get("/profile/image", auth,  accountController.getProfileImage);
+
+module.exports = router;
