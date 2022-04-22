@@ -25,6 +25,7 @@ exports.signin = async (req, res) => {
   const { error } = loginValidator(req.body);
 
   if (error) return res.status(400).json({ message: error.details[0].message });
+  
   let account = await dbConnection.query(authSqlQuery.GET_DATA_FOR_LOGIN, [
     req.body.email,
   ]);

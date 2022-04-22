@@ -4,34 +4,30 @@ exports.queryList = {
   //                                             POST
   GET_ALL_POSTS: `
   SELECT 
-  post._id, post.title, post.slug, post.cover, post.excerpt, post.tags, CONCAT(account.first_name , ' ', account.last_name) as  author_name, file.file_link as author_profile_image,  post.created_at 
+  post._id, post.title, post.slug, post.cover, post.excerpt, post.tags, CONCAT(account.first_name , ' ', account.last_name) as  author_name, account.profile_image_link as author_profile_image,  post.created_at 
   FROM post
   inner JOIN account ON post.author = account._id
-  left JOIN file ON account.profile_image = file._id
   order by  created_at DESC LIMIT $1 OFFSET $2`,
   GET_ONE_POST_BY_ID : `
   SELECT 
   post._id, post.title, post.slug, post.cover, post.excerpt, post.tags, post.md, CONCAT(account.first_name , ' ', account.last_name) as  author_name,
-  file.file_link as author_profile_image, post.tags, post.created_at 
+  account.profile_image_link as author_profile_image, post.tags, post.created_at 
   FROM post 
   inner JOIN account ON post.author= account._id
-  left JOIN file ON account.profile_image = file._id
   where post._id = $1`,
   GET_ONE_POST_BY_SLUG : `
   SELECT 
   post._id, post.title, post.slug, post.cover ,post.excerpt, post.tags, post.md, CONCAT(account.first_name , ' ', account.last_name) as  author_name,
-  file.file_link as author_profile_image, post.tags, post.created_at 
+  account.profile_image_link as author_profile_image, post.tags, post.created_at 
   FROM post 
   inner JOIN account ON post.author= account._id
-  left JOIN file ON account.profile_image = file._id
   where post.slug = $1`,
   GET_ALL_POST_BY_TAG_ID : `
   SELECT  
-  post._id, post.title, post.slug, post.cover,post.excerpt,  CONCAT(account.first_name , ' ', account.last_name) as  author_name, file.file_link as author_profile_image, post.tags, post.created_at 
+  post._id, post.title, post.slug, post.cover,post.excerpt,  CONCAT(account.first_name , ' ', account.last_name) as  author_name, account.profile_image_link as author_profile_image, post.tags, post.created_at 
   from post_tag pt
   inner JOIN post ON post._id =pt.post
   inner JOIN account ON post.author= account._id
-  left JOIN file ON account.profile_image = file._id
   where pt.tag = $1
   order by  created_at DESC LIMIT $2 OFFSET $3
   `,

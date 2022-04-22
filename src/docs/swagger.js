@@ -19,6 +19,12 @@ module.exports = {
       variables: {},
       basePath: "",
     },
+    {
+      url: "https://codetogeeksapi.herokuapp.com/api/v1/",
+      description: "Heroku",
+      variables: {},
+
+    }
   ],
   info: {
     version: "v1",

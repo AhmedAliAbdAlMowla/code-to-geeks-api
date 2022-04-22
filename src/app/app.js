@@ -12,6 +12,10 @@ app.use(logger("dev"));
 // config
 require("./config/config")();
 
+//  parser middleware
+app.use(express.json());
+app.use(express.urlencoded({extended: false}));
+
 // swagger
 require("./startup/swagger")(app);
 
