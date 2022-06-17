@@ -1,4 +1,3 @@
-const req = require("express/lib/request");
 const http = require("http");
 const app = require("../src/app/app");
 const server = http.createServer(app);

@@ -171,3 +171,97 @@ module.exports.AuthPasswordUpdate =  {
     "tags": ["Auth"]
   
 }
+
+
+//                                Oauth 
+
+module.exports.googleSignIn  = {
+
+  summary: 'google signin',
+  operationId: 'google signin',
+  description: 'you can use this end point to signin with google',
+  parameters: [],
+  responses: {
+      '200': {
+          description: '',
+          headers: {}
+      }
+  },
+  requestBody: {
+      required: true,
+      content: {
+          'application/json': {
+              schema: {
+                  type: "object"
+              },
+              example: {
+               token : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6ImNvZGV0b2dlZWtzIiwiaWF0IjoxNTE2MjM5MDIyfQ.Di4bLOrrOGCrQIhHz8CIkI9zIytBilZq1Q1WGThkYOU"
+              }
+
+          }
+      }
+  },
+  tags: ['Auth']
+}
+
+
+module.exports.facebookSignIn  = {
+
+  summary: 'facebook signin',
+  operationId: 'facebook signin',
+  description: 'you can use this end point to signin with facebook',
+  parameters: [],
+  responses: {
+      '200': {
+          description: '',
+          headers: {}
+      }
+  },
+  requestBody: {
+      required: true,
+      content: {
+          'application/json': {
+              schema: {
+                  type: "object"
+              },
+              example: {
+               token : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6ImNvZGV0b2dlZWtzIiwiaWF0IjoxNTE2MjM5MDIyfQ.Di4bLOrrOGCrQIhHz8CIkI9zIytBilZq1Q1WGThkYOU"
+              }
+
+          }
+      }
+  },
+  tags: ['Auth']
+}
+
+
+
+
+module.exports.linkedinSignIn  = {
+
+  summary: 'linkedin signin',
+  operationId: 'linkedin signin',
+  description: 'you can use this end point to signin with linkedin',
+  parameters: [],
+  responses: {
+      '200': {
+          description: '',
+          headers: {}
+      }
+  },
+  requestBody: {
+      required: true,
+      content: {
+          'application/json': {
+              schema: {
+                  type: "object"
+              },
+              example: {
+               token : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6ImNvZGV0b2dlZWtzIiwiaWF0IjoxNTE2MjM5MDIyfQ.Di4bLOrrOGCrQIhHz8CIkI9zIytBilZq1Q1WGThkYOU"
+              }
+
+          }
+      }
+  },
+  tags: ['Auth']
+}

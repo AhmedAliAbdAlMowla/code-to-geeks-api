@@ -29,7 +29,7 @@ module.exports.create = async (req, res) => {
 
 /**
  * @desc    Update tag
- * @route   Patch /api/v1/tag
+ * @route   Patch /api/v1/tag/:id
  * @access  Private
  */
  module.exports.update = async (req, res) => {

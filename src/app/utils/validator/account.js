@@ -7,7 +7,7 @@ const Joi = require("joi");
  * @returns  Result after validate new data
  * @allow    SuperAdmin
  */
- module.exports.updateForSuperAdminValidator = (user) => {
+ module.exports.updateForSuperAdminValidator = (account) => {
     const schema = Joi.object({
       firstName: Joi.string().max(50).min(2),
       lastName: Joi.string().max(50).min(2),
@@ -22,24 +22,41 @@ const Joi = require("joi");
           "object.regex": "password must have at least 8 characters",
           "string.pattern.base": "password must have at least 1 uppercase lowercase special character and number"
         }),
-      phoneNumber: Joi.string().min(4),
       role:Joi.string().valid("admin", "client")
       
     });
   
-    return schema.validate(user);
+    return schema.validate(account);
   };
 /**
  * @desc     Validate updates in user document
  * @returns  Result after validate new data
  */
- module.exports.updateValidator = (user) => {
+ module.exports.updateValidator = (account) => {
   const schema = Joi.object({
     firstName: Joi.string().max(50).min(2),
     lastName: Joi.string().max(50).min(2),
-    about : Joi.string().max(800)
+    bio : Joi.string().max(1000)
     
   });
 
-  return schema.validate(user);
+  return schema.validate(account);
 };
+
+
+
+/**
+ * @desc     Validate updates in user document
+ * @returns  Result after validate new data
+ */
+ module.exports.createSocialLink = (link) => {
+  const schema = Joi.object({
+    name: Joi.string().max(50).min(2),
+    link: Joi.string().max(600).min(2)
+    
+  });
+
+  return schema.validate(link);
+};
+
+

@@ -1,13 +1,15 @@
 "use strict"
 const defult_profile_image = 'f1fa6164-a26f-438c-be32-482b326eff18';
-exports.queryList = {
+module.exports.queryList = {
 
   GET_ACCOUNT_DATA_BY_EMAIL_FOR_RESEND_CONFIRM_EMAIL : `SELECT _id, email, confirmed  FROM account WHERE email = $1`,
   CREATE_ACCOUNT: `INSERT INTO  account(first_name ,last_name  ,email , password ,role ,created_at)
   VALUES($1,$2,$3,$4,'user',CURRENT_TIMESTAMP)`,
-
+  CREATE_OAUTH_ACCOUNT: `INSERT INTO  account(first_name ,last_name ,email ,profile_image_link,  password, role , confirmed , type, created_at)
+  VALUES($1,$2,$3,$4,'145*sxtertoken', 'user',true, $5,CURRENT_TIMESTAMP) RETURNING  _id;`,
+ 
   CHECK_EMAIL_IS_EXIST: ` select exists(select 1 from account where email = $1)`,
-  GET_DATA_FOR_LOGIN: `SELECT _id,first_name,last_name,role,password,confirmed FROM account WHERE email = $1`,
+  GET_DATA_FOR_LOGIN: `SELECT _id, first_name, last_name, role, password, confirmed, type FROM account WHERE email = $1`,
  
  
   CONFIRM_ACCOUNT_BY_EMAIL: 'UPDATE account SET confirmed = true WHERE email =$1',

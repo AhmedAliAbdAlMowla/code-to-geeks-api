@@ -1,9 +1,5 @@
 "use strict";
-const {
-  updateValidator,
-  loginValidator,
-  signupValidator,
-} = require("../utils/validator/auth");
+const authValidator = require("../utils/validator/auth");
 const dbConnection = require("../db/connection");
 const authSqlQuery = require("../db/queries/auth").queryList;
 const bcrypt = require("bcrypt");
@@ -11,10 +7,7 @@ const JWT = require("jsonwebtoken");
 const crypto = require("crypto");
 const Constants = require("../config/constants");
 const Email = require("../services/email");
-const verficationEmailTemplet = require("../utils/assets/templates/verificationEmail"); 
-
-
-
+const verficationEmailTemplet = require("../utils/assets/templates/verificationEmail");
 
 /**
  * @desc    signin user
@@ -22,10 +15,10 @@ const verficationEmailTemplet = require("../utils/assets/templates/verificationE
  * @access  Public
  */
 exports.signin = async (req, res) => {
-  const { error } = loginValidator(req.body);
+  const { error } = authValidator.loginValidator(req.body);
 
   if (error) return res.status(400).json({ message: error.details[0].message });
-  
+
   let account = await dbConnection.query(authSqlQuery.GET_DATA_FOR_LOGIN, [
     req.body.email,
   ]);
@@ -34,12 +27,12 @@ exports.signin = async (req, res) => {
   if (!account)
     return res.status(400).json({ message: "Invalid email or password." });
 
-      //   check if the account is comfirmed
+  //   check if the account is comfirmed
   if (!account.confirmed)
-        return res.status(401).json({
-          message: "Account not confirmed please open you email box and confirm your account.",
-        });
-
+    return res.status(401).json({
+      message:
+        "Account not confirmed please open you email box and confirm your account.",
+    });
 
   const validPassword = await bcrypt.compare(
     req.body.password,
@@ -67,17 +60,17 @@ exports.signin = async (req, res) => {
  * @access  Public
  */
 exports.signup = async (req, res) => {
-  const { error } = signupValidator(req.body);
+  const { error } = authValidator.signupValidator(req.body);
 
   if (error) return res.status(400).json({ message: error.details[0].message });
-  
-  const email_exist = await dbConnection.query(authSqlQuery.CHECK_EMAIL_IS_EXIST, [
-    req.body.email,
-  ]);
+
+  const email_exist = await dbConnection.query(
+    authSqlQuery.CHECK_EMAIL_IS_EXIST,
+    [req.body.email]
+  );
 
   if (email_exist.rows[0].exists === true)
-  return res.status(400).json({ message: "Email already used." });
-
+    return res.status(400).json({ message: "Email already used." });
 
   // hashing password
   const salt = await bcrypt.genSalt(10);
@@ -89,16 +82,14 @@ exports.signup = async (req, res) => {
     req.body.email,
     req.body.password,
   ];
-  
+
   await dbConnection.query(authSqlQuery.CREATE_ACCOUNT, accountData);
   res.status(201).json({
     message: "Account created.",
   });
 
   await sendConfirmationEmailFunc(req.body.email);
- 
 };
-
 
 /**
  * @desc    Update user password
@@ -107,11 +98,11 @@ exports.signup = async (req, res) => {
  */
 exports.updatePassword = async (req, res) => {
   // validate newPassword
-  const { error } = updateValidator({ password: req.body.newPassword });
+  const { error } = authValidator.updateValidator({
+    password: req.body.newPassword,
+  });
 
-  if (error) 
-    return res.status(400).json({ message: error.details[0].message });
-  
+  if (error) return res.status(400).json({ message: error.details[0].message });
 
   let user = await dbConnection.query(authSqlQuery.GET_ACCOUNT_PASSWORD, [
     req.user.id,
@@ -133,9 +124,6 @@ exports.updatePassword = async (req, res) => {
   res.status(200).json({ message: "password updated." });
 };
 
-
-
-
 //  Forgot Password
 
 /**
@@ -144,12 +132,13 @@ exports.updatePassword = async (req, res) => {
  * @access  Public
  */
 exports.recover = async (req, res) => {
-  const { error } = updateValidator({ email: req.body.email });
+  const { error } = authValidator.updateValidator({ email: req.body.email });
   if (error) return res.status(400).json({ error: error.details[0].message });
 
-  let email_exist = await dbConnection.query(authSqlQuery.CHECK_EMAIL_IS_EXIST, [
-    req.body.email,
-  ]);
+  let email_exist = await dbConnection.query(
+    authSqlQuery.CHECK_EMAIL_IS_EXIST,
+    [req.body.email]
+  );
 
   if (email_exist.rows[0].exists === false)
     return res.status(401).json({
@@ -163,16 +152,18 @@ exports.recover = async (req, res) => {
   const resetPasswordToken = crypto.randomBytes(3).toString("hex");
   let resetPasswordExpires = Date.now() + 1200000; //expires in an 20 minutes
 
+  await dbConnection.query(authSqlQuery.UPDATE_PASSWORD_VERIFICATION_TOKEN, [
+    resetPasswordToken,
+    resetPasswordExpires,
+    req.body.email,
+  ]);
 
-   await dbConnection.query(
-    authSqlQuery.UPDATE_PASSWORD_VERIFICATION_TOKEN,
-    [resetPasswordToken, resetPasswordExpires, req.body.email]);
-    
   //  Send mail
 
   const emailText = "The password reset code is : " + resetPasswordToken;
-  const emailSubject = "(CODETOGEEKS) Sending code to confirm change password :";
-  await Email.sendMail(emailSubject, emailText," ", req.body.email);
+  const emailSubject =
+    "(CODETOGEEKS) Sending code to confirm change password :";
+  await Email.sendMail(emailSubject, emailText, " ", req.body.email);
 
   res.status(200).json({ message: " Send password reset code is success." });
 };
@@ -183,19 +174,20 @@ exports.recover = async (req, res) => {
  * @access  Public
  */
 exports.checkToken = async (req, res) => {
-
-console.log(req.body)
-  const user = await dbConnection.query(authSqlQuery.CHECH_TOKENT_IS_FIND,[req.body.token]);
+  console.log(req.body);
+  const user = await dbConnection.query(authSqlQuery.CHECH_TOKENT_IS_FIND, [
+    req.body.token,
+  ]);
 
   if (!user.rows.length)
     return res
       .status(401)
       .json({ message: "Password reset token is invalid or has expired." });
 
-  const resetPasswordExpires = (user.rows[0].reset_password_expires).getTime() ;
-  
-  if((resetPasswordExpires) < Date.now())
-      return res
+  const resetPasswordExpires = user.rows[0].reset_password_expires.getTime();
+
+  if (resetPasswordExpires < Date.now())
+    return res
       .status(401)
       .json({ message: "Password reset token has expired." });
 
@@ -208,56 +200,55 @@ console.log(req.body)
  */
 exports.resetPassword = async (req, res) => {
   // validate newPassword
-  const { error } = updateValidator({ password: req.body.password });
+  const { error } = authValidator.updateValidator({
+    password: req.body.password,
+  });
 
-  if (error) 
-    return res.status(400).json({ message: error.details[0].message });
-  
+  if (error) return res.status(400).json({ message: error.details[0].message });
 
-    const user = await dbConnection.query(authSqlQuery.CHECH_TOKENT_IS_FIND,[req.body.token]);
+  const user = await dbConnection.query(authSqlQuery.CHECH_TOKENT_IS_FIND, [
+    req.body.token,
+  ]);
 
-    if (!user.rows.length)
-      return res
-        .status(401)
-        .json({ message: "Password reset token is invalid or has expired." });
-  
-    const resetPasswordExpires = (user.rows[0].reset_password_expires).getTime() ;
-    
-    if((resetPasswordExpires) < Date.now())
-        return res
-        .status(401)
-        .json({ message: "Password reset token has expired." });
-  
+  if (!user.rows.length)
+    return res
+      .status(401)
+      .json({ message: "Password reset token is invalid or has expired." });
 
-        const salt = await bcrypt.genSalt(10);
-        req.body.password = await bcrypt.hash(req.body.password, salt);
+  const resetPasswordExpires = user.rows[0].reset_password_expires.getTime();
 
-       await dbConnection.query(authSqlQuery.RESET_ACCOUNT_PASSWORD, [
-          req.body.password, 
-          req.body.token
-        ]);
+  if (resetPasswordExpires < Date.now())
+    return res
+      .status(401)
+      .json({ message: "Password reset token has expired." });
 
+  const salt = await bcrypt.genSalt(10);
+  req.body.password = await bcrypt.hash(req.body.password, salt);
+
+  await dbConnection.query(authSqlQuery.RESET_ACCOUNT_PASSWORD, [
+    req.body.password,
+    req.body.token,
+  ]);
 
   res.status(200).json({ message: "Your password has been updated." });
 };
-
 
 /**
  * @desc    Resend Confirmation Email
  * @route   POST /api/v1/auth/resend/confirmation/email
  * @access  Public
  */
- module.exports.reSendConfirmationEmail = async (req, res) => {
-  const { error } = updateValidator(req.body);
+module.exports.reSendConfirmationEmail = async (req, res) => {
+  const { error } = authValidator.updateValidator(req.body);
   if (error)
     return res.status(400).json({
       message: error.details[0].message,
     });
 
-  let user = await dbConnection.query(authSqlQuery.GET_ACCOUNT_DATA_BY_EMAIL_FOR_RESEND_CONFIRM_EMAIL, [
-    req.body.email,
-  ]);
-
+  let user = await dbConnection.query(
+    authSqlQuery.GET_ACCOUNT_DATA_BY_EMAIL_FOR_RESEND_CONFIRM_EMAIL,
+    [req.body.email]
+  );
 
   user = user.rows[0];
   if (!user)
@@ -281,7 +272,7 @@ exports.resetPassword = async (req, res) => {
  * @access  Public webhook
  */
 
- module.exports.confirmation = async (req, res) => {
+module.exports.confirmation = async (req, res) => {
   let decoded;
   try {
     decoded = await JWT.verify(req.params.token, process.env.JWT_EMAIL_SECRET);
@@ -295,7 +286,101 @@ exports.resetPassword = async (req, res) => {
   res.status(200).send("<h3>Successful  confirmation..✌️✌️</h3>");
 };
 
+//                        Oauth
 
+/**
+ * @desc    google Signin user
+ * @route   POST /api/v1/auth/google
+ * @access  Public
+ */
+exports.googleSignin = async (req, res) => {
+  const { error } = authValidator.OauthSignupValidator(req.body);
+
+  if (error) return res.status(400).json({ message: error.details[0].message });
+
+  let googleToken = req.body.token;
+  let decodeOfGoogleToken = JWT.decode(googleToken);
+
+  console.log(decodeOfGoogleToken)
+  // validate some variations in token
+  if (
+    decodeOfGoogleToken.aud !== process.env.OAUTH_GOOGLE_CLIENT_ID ||
+    Math.floor(Date.now() / 1000) > decodeOfGoogleToken.exp ||
+    !decodeOfGoogleToken.email_verified
+  )
+    return res.status(400).json({ message: "unvalid token !!" });
+
+  //  check if eamil alreedy exist
+
+  const email_exist = await dbConnection.query(
+    authSqlQuery.CHECK_EMAIL_IS_EXIST,
+    [decodeOfGoogleToken.email]
+  );
+
+  if (email_exist.rows[0].exists === true) {
+    let account = await dbConnection.query(authSqlQuery.GET_DATA_FOR_LOGIN, [
+      decodeOfGoogleToken.email,
+    ]);
+
+    account = account.rows[0];
+
+    if (account.type === "registred") {
+      return res
+        .status(400)
+        .json({
+          message:
+            "This email have registred account , please try login with this email and password !",
+        });
+    } else {
+      const newAuthToken = await JWT.sign(
+        {
+          _id: account._id,
+          name: account.first_name + " " + account.last_name,
+          role: account.role,
+        },
+        process.env.JWT_PRIVIAT_KEY,
+        {
+          expiresIn: "1d",
+        }
+      );
+      return res
+        .status(200)
+        .json({ message: "succes Auth", token: newAuthToken });
+    }
+    
+  } else {
+    const accountData = [
+      decodeOfGoogleToken.given_name,
+      decodeOfGoogleToken.family_name,
+      decodeOfGoogleToken.email,
+      decodeOfGoogleToken.picture,
+      'google'
+    ];
+
+  
+   let result  =  await dbConnection.query(authSqlQuery.CREATE_OAUTH_ACCOUNT, accountData);
+    
+   result = result.rows[0];
+   
+
+  const newAuthToken = await JWT.sign(
+    {
+      _id: result._id,
+      name:       decodeOfGoogleToken.given_name + ' ' + decodeOfGoogleToken.family_name,
+      role: 'user'
+    },
+    process.env.JWT_PRIVIAT_KEY,
+    {
+      expiresIn: "1d",
+    }
+  );
+  return res
+    .status(200)
+    .json({ message: "succes Auth", token: newAuthToken });
+
+  }
+
+};
 
 // #            functions
 
@@ -303,7 +388,7 @@ exports.resetPassword = async (req, res) => {
  * @desc    Send Confirmation Email Function
  * @access  Just use in User Controller
  */
- const sendConfirmationEmailFunc = async (email) => {
+const sendConfirmationEmailFunc = async (email) => {
   const token = await JWT.sign(
     {
       email,

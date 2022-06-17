@@ -1,6 +1,6 @@
-module.exports.getAllPosts = {
-  summary: "getAllPosts",
-  operationId: "getAllPosts",
+module.exports.getPosts = {
+  summary: "get Posts",
+  operationId: "get Posts",
   parameters: [
     {
       name: "pageNumber",
@@ -8,6 +8,7 @@ module.exports.getAllPosts = {
       required: true,
       style: "form",
       schema: { type: "number" },
+      
     },
     {
       name: "pageSize",
@@ -16,12 +17,19 @@ module.exports.getAllPosts = {
       style: "form",
       schema: { type: "number" },
     },
+    {
+      name: "state",
+      in: "query",
+      required: true,
+      style: "form",
+      schema: { type: "string" },
+    },
   ],
   responses: { 200: { description: "", headers: {} } },
   tags: ["Post"],
 };
 
-module.exports.createPost = {
+module.exports.create = {
   summary: "create new post",
   description: "you can use this end point to create new post. ",
   responses: { 200: { description: "", headers: {} } },
@@ -35,7 +43,7 @@ module.exports.createPost = {
         example: {
           title: "test",
           slug: "pl plade1324 ww",
-          cover: "f1fa6164-a26f-438c-be32-482b326eff18",
+      
           excerpt: "this post explain how to create web page using react.",
           md: "## this is a stmaller title",
           tags: ["c5f7efb7-4a66-4350-bbea-b8627e69d58b"],
@@ -73,6 +81,7 @@ module.exports.update = {
           excerpt: "this post explain how to create web page using react.",
           md: "## this is a stmaller title",
           tags: ["c5f7efb7-4a66-4350-bbea-b8627e69d58b"],
+          published :"published"
         },
       },
     },
@@ -180,4 +189,40 @@ module.exports.deletePost = {
   ],
   responses: { 200: { description: "", headers: {} } },
   tags: ["Post"],
+};
+
+
+module.exports.uploadPostCoverImage = {
+  summary: "upload post cover image",
+  description: "you can use this end point to change post cover image.",
+  operationId: "",
+  parameters: [
+    {
+      name: "post_id",
+      in: "path",
+      required: true,
+      style: "form",
+      schema: { type: "string" },
+    },
+  ],
+  responses: { 200: { description: "", headers: {} } },
+  requestBody: {
+    required: true,
+    content: {
+      "multipart/form-data": {
+        schema: {
+          type: "object",
+          required: ["file"],
+
+          properties: {
+            file: {
+              type: "string",
+              format: "base64",
+            },
+          },
+        },
+      },
+    },
+  },
+  tags: ["Post"]
 };

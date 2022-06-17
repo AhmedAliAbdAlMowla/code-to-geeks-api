@@ -1,3 +1,4 @@
+const s3Service = require("../services/s3");
 const postSqlQuerys = require("../db/queries/post").queryList;
 const dbConnection = require("../db/connection");
 var slugify = require("slugify");
@@ -17,7 +18,9 @@ module.exports.create = async (req, res) => {
   //check if tag alreedy exist
   const tags = data.tags;
   for (id of tags) {
-    let result = await dbConnection.query(postSqlQuerys.CHECK_IF_TAG_EXIST, [id]);
+    let result = await dbConnection.query(postSqlQuerys.CHECK_IF_TAG_EXIST, [
+      id,
+    ]);
     if (result.rows[0].exists != true)
       return res
         .status(400)
@@ -31,7 +34,6 @@ module.exports.create = async (req, res) => {
     result = await dbConnection.query(postSqlQuerys.CREATE_NEW_POST, [
       data.title,
       slugify(data.slug, "_"),
-      data.cover,
       data.excerpt,
       data.md,
       req.user._id,
@@ -41,11 +43,14 @@ module.exports.create = async (req, res) => {
 
     //   insert  post_tag row for m to m relsh
     for (id of tags)
-      await dbConnection.query(postSqlQuerys.CREATE_POST_TAG_REL, [post_id, id]);
+      await dbConnection.query(postSqlQuerys.CREATE_POST_TAG_REL, [
+        post_id,
+        id,
+      ]);
 
     await dbConnection.query("COMMIT");
   } catch (err) {
-    console.log(err.message)
+    console.log(err.message);
     await dbConnection.query("ROLLBACK");
 
     return res.status(400).json({ message: err.message });
@@ -60,34 +65,80 @@ module.exports.create = async (req, res) => {
 };
 
 /**
+ * @desc    Upload post cover image
+ * @route   POST /api/v1/post/cover/image/:id
+ * @access  Private [ admin - author ]
+ */
+exports.uploadCoverImage = async (req, res) => {
+  if (!req.file)
+    return res
+      .status(400)
+      .json({ message: "You shoud send file in form-data." });
+
+  // get old image  S3Key if image exist
+  const postCoverImageS3Key = await dbConnection.query(
+    postSqlQuerys.GET_POST_COVER_IMAGE_S3_KEY,
+    [req.params.id]
+  );
+
+  if (postCoverImageS3Key.rowCount == 0)
+    return res
+      .status(400)
+      .json({ message: "No valid entry found for provided ID" });
+
+  // upload new image to aws S3
+  const imageData = await s3Service.uploadFile("postCovers/", req.file);
+
+  //  update accountby new image data
+  await dbConnection.query(postSqlQuerys.UPDATE_POST_COVER_IMAGE, [
+    imageData.fileLink,
+    imageData.s3_key,
+    req.params.id,
+  ]);
+
+  //  if image data have s3_key then this account have old image then delete this from aws
+  if (postCoverImageS3Key.rows[0].s3_key !== null) {
+    //  delete old image file from aws
+    await s3Service.deleteOne(postCoverImageS3Key.rows[0]);
+  }
+
+  res.status(200).json({
+    message: "Successful upload",
+    link: imageData.fileLink,
+  });
+};
+
+/**
  * @desc    Update  post
  * @route   Patch /api/v1/post
  * @access  Private
  */
- module.exports.update = async (req, res) => {
-  
-    // validateProduct body
-    const { error } = Validator.Update(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
- 
-    // update
-    let updateCol = {};
-    let updateDate = Object.values(req.body);
+module.exports.update = async (req, res) => {
+  // validateProduct body
+  const { error } = Validator.Update(req.body);
+  if (error) return res.status(400).json({ message: error.details[0].message });
 
-   Object.keys(req.body).forEach(function (key) {
-      updateCol[key] = "";
-    });
+  // if update slug make slugify
+  if (req.body.slug) req.body.slug = slugify(req.body.slug, "_");
+  // update
+  let updateCol = {};
+  let updateDate = Object.values(req.body);
 
-   const result = await dbConnection.query(
+  Object.keys(req.body).forEach(function (key) {
+    updateCol[key] = "";
+  });
+
+  const result = await dbConnection.query(
     postSqlQuerys.UPDATE_POST_DATA(req.params.id, "post", updateCol),
-      updateDate
-    );
-  
-    if (result.rowCount == 0 ) 
-          return res.status(400).json({ message: "No valid entry found for provided ID" });
-      
-      res.status(200).json({ message: "Successful  update"});
-  
+    updateDate
+  );
+
+  if (result.rowCount == 0)
+    return res
+      .status(400)
+      .json({ message: "No valid entry found for provided ID" });
+
+  res.status(200).json({ message: "Successful  update" });
 };
 
 /**
@@ -99,11 +150,19 @@ module.exports.get_all = async (req, res) => {
   // pagination element
   const pageNumber = parseInt(req.query.pageNumber, 10);
   const pageSize = parseInt(req.query.pageSize, 10);
+  const publishState = req.query.state;
+  if (publishState !== "published" && publishState !== "unpublished")
+    return res
+      .status(400)
+      .json({ message: "No valid entry found for publish State" });
 
-  let total = await dbConnection.query(postSqlQuerys.GET_POSTS_COUNT);
+  let total = await dbConnection.query(postSqlQuerys.GET_POSTS_COUNT, [
+    publishState === "published",
+  ]);
   total = total.rows[0].count;
 
   let posts = await dbConnection.query(postSqlQuerys.GET_ALL_POSTS, [
+    publishState === "published",
     pageSize,
     (pageNumber - 1) * pageSize,
   ]);
@@ -159,10 +218,10 @@ module.exports.get_all_by_tag_id = async (req, res) => {
   const pageNumber = parseInt(req.query.pageNumber, 10);
   const pageSize = parseInt(req.query.pageSize, 10);
 
-  
-  let total = await dbConnection.query(postSqlQuerys.GET_POSTS_COUNT_BY_TAG_ID, [
-    req.params.tagId,
-  ]);
+  let total = await dbConnection.query(
+    postSqlQuerys.GET_POSTS_COUNT_BY_TAG_ID,
+    [req.params.tagId]
+  );
   total = total.rows[0].count;
 
   let posts = await dbConnection.query(postSqlQuerys.GET_ALL_POST_BY_TAG_ID, [
@@ -185,17 +244,17 @@ module.exports.get_all_by_tag_id = async (req, res) => {
  * @access  Private
  */
 module.exports.delete = async (req, res) => {
-let result;
+  let result;
   try {
-  await dbConnection.query(postSqlQuerys.DELETE_POST_TAG_REL_BY_POST_ID, [
-    req.params.id,
-  ]);
+    await dbConnection.query(postSqlQuerys.DELETE_POST_TAG_REL_BY_POST_ID, [
+      req.params.id,
+    ]);
 
-   result = await dbConnection.query(postSqlQuerys.DELETE_POST_BY_ID, [
-    req.params.id,
-  ]);
-  }catch (err) {
-    console.log(err.message)
+    result = await dbConnection.query(postSqlQuerys.DELETE_POST_BY_ID, [
+      req.params.id,
+    ]);
+  } catch (err) {
+    console.log(err.message);
     await dbConnection.query("ROLLBACK");
 
     return res.status(400).json({ message: err.message });

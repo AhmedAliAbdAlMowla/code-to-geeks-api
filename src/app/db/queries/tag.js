@@ -1,7 +1,5 @@
 "use strict"
 
-const { func } = require("joi");
-
 const defult_tag = `b8e4cfd0-baf2-43d0-9124-efec13387dd7`;
 exports.queryList = {
 

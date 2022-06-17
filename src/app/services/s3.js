@@ -19,20 +19,20 @@ async function uploadFile(params) {
  * @param     file from multer
  * @returns   { file uploaded mete data }
  */
-module.exports.uploadFile = async (file) => {
-  const myFile = file.originalname.split(".");
-  const extension = myFile[myFile.length - 1];
-  const originalName = myFile[0];
 
-  //  upload file to aws S3 params
-  const uploadParams = {
-    Bucket: process.env.BUCKET,
-    Key: `${v4()}.${extension}`,
-    Body: file.buffer,
-    ContentType: file.mimetype,
-    ACL: "public-read",
-  };
-
+  module.exports.uploadFile = async (foldersUrl, file) => {
+    const myFile = file.originalname.split(".");
+    const extension = myFile[myFile.length - 1];
+    const originalName = myFile[0];
+  
+    //  upload file to aws S3 params
+    const uploadParams = {
+      Bucket: process.env.BUCKET,
+      Key: `${foldersUrl}${v4()}.${extension}`,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+      ACL: "public-read",
+    };
 
   const result = await uploadFile(uploadParams);
 

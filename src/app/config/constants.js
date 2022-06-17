@@ -3,7 +3,7 @@ exports.accountTableKey={
   firstName:"first_name",
   lastName:"last_name",
   phoneNumber:"phone_number",
-  about: "about"
+  bio: "bio"
 }
 exports.smsBody = "";
 exports.emailBody = "";

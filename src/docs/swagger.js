@@ -5,6 +5,8 @@ const post = require("./post");
 const tag = require("./tag");
 const message = require("./message");
 const about = require("./aboutAs");
+const file = require("./file");
+const savedPost = require('./savedPost')
 module.exports = {
   openapi: "3.0.0",
   servers: [
@@ -19,12 +21,6 @@ module.exports = {
       variables: {},
       basePath: "",
     },
-    {
-      url: "https://codetogeeksapi.herokuapp.com/api/v1/",
-      description: "Heroku",
-      variables: {},
-
-    }
   ],
   info: {
     version: "v1",
@@ -39,20 +35,29 @@ module.exports = {
   tags: [
     {
       name: "Auth",
-      description: "Everything about authentication and authorization",
+      description: "Everything about authentication and authorization.",
     },
     {
       name: "Account",
-      description: "Everything about user account",
+      description: "Everything about user accounts.",
     },
 
     {
       name: "Post",
-      description: "Everything about posts",
+      description: "Everything about posts.",
     },
     {
       name: "Tag",
-      description: "Everything about tags",
+      description: "Everything about tags.",
+    },
+   
+    {
+      name: "File",
+      description: "Everything about files.",
+    },
+    {
+      name: "Saved Post",
+      description: "Everything about saved post.",
     },
     /*
        {
@@ -91,6 +96,16 @@ module.exports = {
     "/auth/password": {
       patch: auth.AuthPasswordUpdate,
     },
+
+    "/auth/google" :{
+      post : auth.googleSignIn  
+    },
+    "/auth/facebook" :{
+      post : auth.facebookSignIn  
+    },
+    "/auth/linkedin" :{
+      post : auth.linkedinSignIn  
+    },
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -100,9 +115,20 @@ module.exports = {
       
     },
     "/account/profile/image" :{
-      post : account.uploadAccountProfileImage,
-      get :account.getProfileImage
+      get :account.getProfileImage,
+      post : account.uploadAccountProfileImage
+     
     },
+
+    "/account/profile/social":{
+      get : account.getAllSocialLink,
+      post: account.createSocialLink
+    },
+    "/account/author/profile/{author_id}":{
+      get : account.getAuthorProfiletData
+ 
+    },
+
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     /*"/home": {
@@ -118,8 +144,12 @@ module.exports = {
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     "/post": {
-      get: post.getAllPosts,
+      get: post.getPosts,
       post: post.create
+    },
+    "/post/cover/image/{post_id}" :{
+      post : post.uploadPostCoverImage,
+ 
     },
     "/post/id/{post_id}": {
       get: post.getOnePostByPostId,
@@ -138,7 +168,7 @@ module.exports = {
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     "/tag": {
-      get: tag.getAllTags,
+      get: tag.getTags,
       post: tag.create,
     },
     "/tag/{tag_id}": {
@@ -146,6 +176,31 @@ module.exports = {
       patch: tag.update,
       delete: tag.deleteTag,
     },
+
+
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    "/file" : {
+      get : file.getFiles,
+      post : file.upload
+     
+    },
+    "/file/{file_id}" :{
+      get : file.getFile,
+      patch : file.update,
+      delete : file.deleteFile
+    },
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    "/saved" : {
+      get  : savedPost.getSavedPosts,
+      post : savedPost.create,
+     
+    },
+    "/saved/{saved_post_id}" :{
+      delete : savedPost.deleteSavedPost
+    },
+    
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   /*  "/messages/": {

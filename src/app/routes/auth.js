@@ -23,5 +23,6 @@ router.post("/recover",authController.recover);
 router.post("/token/check",authController.checkToken);
 router.post("/password/reset",authController.resetPassword);
 
-
+//  Oauth
+router.post("/google", authController.googleSignin)
 module.exports = router;

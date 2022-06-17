@@ -74,3 +74,19 @@ module.exports.updateValidator = (user) => {
 
   return schema.validate(user);
 };
+
+ //         Oauth
+
+
+ /**
+ * @desc     Validate  Oauth signin
+ * @returns  Result after validate user token
+ */
+module.exports.OauthSignupValidator = (user) => {
+  const schema = Joi.object({
+
+    token : Joi.string().min(10).required(),
+  });
+
+  return schema.validate(user);
+};

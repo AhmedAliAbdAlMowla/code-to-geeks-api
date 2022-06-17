@@ -1,6 +1,7 @@
-module.exports.getAllTags = {
-  summary: "getAllTags",
-  operationId: "getAllTags",
+module.exports.getTags = {
+  summary: "get tags",
+  description: "you can use this end point to get tags.",
+  operationId: "get tags",
   parameters: [
     {
       name: "pageNumber",
