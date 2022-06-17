@@ -150,7 +150,7 @@ module.exports.get_all = async (req, res) => {
   // pagination element
   const pageNumber = parseInt(req.query.pageNumber, 10);
   const pageSize = parseInt(req.query.pageSize, 10);
-  const publishState = req.query.state;
+  const publishState = (req.query.state)?req.query.state:"published";
   if (publishState !== "published" && publishState !== "unpublished")
     return res
       .status(400)
