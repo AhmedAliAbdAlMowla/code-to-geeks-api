@@ -10,6 +10,13 @@ const savedPost = require('./savedPost')
 module.exports = {
   openapi: "3.0.0",
   servers: [
+    
+    https://codetogeeksapi.herokuapp.com/api-docs/
+    {
+      url: "https://codetogeeksapi.herokuapp.com/api/v1/",
+      description: "Heroku server",
+      variables: {},
+    },
     {
       url: "http://localhost:4000/api/v1/",
       description: "Devlopment server (uses test data)",
@@ -21,6 +28,8 @@ module.exports = {
       variables: {},
       basePath: "",
     },
+    
+    
   ],
   info: {
     version: "v1",
