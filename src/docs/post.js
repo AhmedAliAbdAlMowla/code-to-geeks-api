@@ -20,7 +20,7 @@ module.exports.getPosts = {
     {
       name: "state",
       in: "query",
-      required: true,
+      required: false,
       style: "form",
       schema: { type: "string" },
     },
