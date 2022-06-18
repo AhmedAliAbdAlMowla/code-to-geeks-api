@@ -35,7 +35,10 @@ exports.queryList = {
   GET_POSTS_COUNT: `SELECT COUNT(*) FROM post where published = $1`,
   GET_POSTS_COUNT_BY_TAG_ID : `SELECT COUNT(*) FROM post_tag where tag= $1`,
   CHECK_IF_TAG_EXIST : `select exists(select 1 from tag where _id = $1)`,
-  CREATE_NEW_POST: `INSERT INTO post(title, slug, excerpt, md, author, tags, created_at) VALUES($1, $2, $3, $4, $5, $6, CURRENT_TIMESTAMP) RETURNING _id`,
+  CHECK_IF_POST_TAG_EXIST : `select exists(select 1 from post_tag where post = $1 AND tag = $2)`,
+  GET_ALL_POST_TAG_BY_POST_ID: `select _id,tag from post_tag where post = $1 `,
+  DELETE_POST_TAG: `DELETE FROM post_tag WHERE _id = $1`,
+  CREATE_NEW_POST: `INSERT INTO post(title, slug, excerpt, md, author, tags, count_minutes_read, created_at) VALUES($1, $2, $3, $4, $5, $6,$7, CURRENT_TIMESTAMP) RETURNING _id`,
   CREATE_POST_TAG_REL: `INSERT INTO post_tag(post, tag) VALUES($1,$2)`,
   UPDATE_POST_DATA: (id, table, cols) => {
     let query = ["UPDATE " + table];

@@ -3,6 +3,7 @@ const postSqlQuerys = require("../db/queries/post").queryList;
 const dbConnection = require("../db/connection");
 var slugify = require("slugify");
 const Validator = require("../utils/validator/post");
+const readTime = require("../services/readingTime");
 
 /**
  * @desc    Create new post
@@ -15,6 +16,8 @@ module.exports.create = async (req, res) => {
   if (error) return res.status(400).json({ message: error.details[0].message });
 
   let data = req.body;
+  // add estimated reading time to data
+  data.readTime = await readTime(data.md);
   //check if tag alreedy exist
   const tags = data.tags;
   for (id of tags) {
@@ -38,6 +41,7 @@ module.exports.create = async (req, res) => {
       data.md,
       req.user._id,
       data.tags,
+      data.readTime,
     ]);
     post_id = result.rows[0]._id;
 
@@ -109,6 +113,41 @@ exports.uploadCoverImage = async (req, res) => {
 };
 
 /**
+ * @desc    Reset post cover image
+ * @route   POST /api/v1/post/cover/image/reset/:id
+ * @access  Private [ admin - author ]
+ */
+exports.resetCoverImage = async (req, res) => {
+  // get old image  S3Key if image exist
+  const postCoverImageS3Key = await dbConnection.query(
+    postSqlQuerys.GET_POST_COVER_IMAGE_S3_KEY,
+    [req.params.id]
+  );
+  if (postCoverImageS3Key.rowCount == 0)
+    return res
+      .status(400)
+      .json({ message: "No valid entry found for provided ID" });
+
+  //  if image data have s3_key then this account have old image then delete this from aws
+  if (postCoverImageS3Key.rows[0].s3_key !== null) {
+    await dbConnection.query(postSqlQuerys.UPDATE_POST_COVER_IMAGE, [
+      null,
+      null,
+      req.params.id,
+    ]);
+  }
+
+  res.status(200).json({
+    message: "Successful reset",
+  });
+
+  if (postCoverImageS3Key.rows[0].s3_key !== null) {
+    //  delete old image file from aws
+    await s3Service.deleteOne(postCoverImageS3Key.rows[0]);
+  }
+};
+
+/**
  * @desc    Update  post
  * @route   Patch /api/v1/post
  * @access  Private
@@ -118,6 +157,8 @@ module.exports.update = async (req, res) => {
   const { error } = Validator.Update(req.body);
   if (error) return res.status(400).json({ message: error.details[0].message });
 
+  // add estimated reading time to data
+  req.body.count_minutes_read = await readTime(req.body.md);
   // if update slug make slugify
   if (req.body.slug) req.body.slug = slugify(req.body.slug, "_");
   // update
@@ -127,6 +168,32 @@ module.exports.update = async (req, res) => {
   Object.keys(req.body).forEach(function (key) {
     updateCol[key] = "";
   });
+
+  let all_tags_for_post = await dbConnection.query(
+    postSqlQuerys.GET_ALL_POST_TAG_BY_POST_ID,
+    [req.params.id]
+  );
+
+
+  for (ob of all_tags_for_post.rows) {
+    if (req.body.tags.includes(ob.tag) === false) {
+      await dbConnection.query(postSqlQuerys.DELETE_POST_TAG, [ob._id]);
+    }
+  }
+
+  for (tag of req.body.tags) {
+    let if_exist = await dbConnection.query(
+      postSqlQuerys.CHECK_IF_POST_TAG_EXIST,
+      [req.params.id, tag]
+    );
+
+    if (if_exist.rows[0].exists != true) {
+      await dbConnection.query(postSqlQuerys.CREATE_POST_TAG_REL, [
+        req.params.id,
+        tag,
+      ]);
+    }
+  }
 
   const result = await dbConnection.query(
     postSqlQuerys.UPDATE_POST_DATA(req.params.id, "post", updateCol),
@@ -150,7 +217,7 @@ module.exports.get_all = async (req, res) => {
   // pagination element
   const pageNumber = parseInt(req.query.pageNumber, 10);
   const pageSize = parseInt(req.query.pageSize, 10);
-  const publishState = (req.query.state)?req.query.state:"published";
+  const publishState = req.query.state ? req.query.state : "published";
   if (publishState !== "published" && publishState !== "unpublished")
     return res
       .status(400)

@@ -226,3 +226,22 @@ module.exports.uploadPostCoverImage = {
   },
   tags: ["Post"]
 };
+
+
+module.exports.resetPostCoverImage = {
+  summary: "reset post cover image",
+  description: "you can use this end point to reset post cover image.",
+  operationId: "",
+  parameters: [
+    {
+      name: "post_id",
+      in: "path",
+      required: true,
+      style: "form",
+      schema: { type: "string" },
+    },
+  ],
+  responses: { 200: { description: "", headers: {} } },
+  
+  tags: ["Post"]
+};
