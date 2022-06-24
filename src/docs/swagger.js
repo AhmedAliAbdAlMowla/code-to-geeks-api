@@ -11,18 +11,24 @@ module.exports = {
   openapi: "3.0.0",
   servers: [
     
+ 
     
-    
+       {
+      url: "http://localhost:4000/api/v1/",
+      description: "Devlopment server (uses test data)",
+      variables: {},
+    },
+       {
+      url: "http://13.40.82.105/api/v1/",
+      description: "AWS",
+      variables: {},
+    },
     {
       url: "https://codetogeeksapi.herokuapp.com/api/v1/",
       description: "Heroku server ",
       variables: {},
     },
-    {
-      url: "http://localhost:4000/api/v1/",
-      description: "Devlopment server (uses test data)",
-      variables: {},
-    },
+ 
     {
       url: "http://169.50.37.227/api2/v1/",
       description: "Production server (uses live data)",
