@@ -174,7 +174,6 @@ module.exports.update = async (req, res) => {
     [req.params.id]
   );
 
-
   for (ob of all_tags_for_post.rows) {
     if (req.body.tags.includes(ob.tag) === false) {
       await dbConnection.query(postSqlQuerys.DELETE_POST_TAG, [ob._id]);
@@ -223,17 +222,33 @@ module.exports.get_all = async (req, res) => {
       .status(400)
       .json({ message: "No valid entry found for publish State" });
 
-  let total = await dbConnection.query(postSqlQuerys.GET_POSTS_COUNT, [
-    publishState === "published",
-  ]);
+  let total,posts;
+
+  
+  if(  req.query.search&& (req.query.search !="")){
+    total = await dbConnection.query(postSqlQuerys.GET_POSTS_COUNT_WITH_SEARCH, [
+      publishState === "published",
+      "%" + req.query.search + "%",
+    ]);
+    posts = await dbConnection.query(postSqlQuerys.GET_ALL_POSTS_WITH_SEARCH, [
+      publishState === "published",
+      "%" + req.query.search + "%",
+      pageSize,
+      (pageNumber - 1) * pageSize,
+    ]);
+  
+  }
+  else{
+    total = await dbConnection.query(postSqlQuerys.GET_POSTS_COUNT, [
+      publishState === "published",
+    ]);
+    posts = await dbConnection.query(postSqlQuerys.GET_ALL_POSTS, [
+      publishState === "published",
+      pageSize,
+      (pageNumber - 1) * pageSize,
+    ]);
+  }
   total = total.rows[0].count;
-
-  let posts = await dbConnection.query(postSqlQuerys.GET_ALL_POSTS, [
-    publishState === "published",
-    pageSize,
-    (pageNumber - 1) * pageSize,
-  ]);
-
   posts = posts.rows;
 
   res.status(200).json({
