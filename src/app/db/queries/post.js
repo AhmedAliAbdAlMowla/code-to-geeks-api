@@ -2,6 +2,8 @@
 exports.queryList = {
 
   //                                             POST
+
+  SEARCH : `SELECT _id, title FROM post WHERE title ILIKE $1`,
   GET_ALL_POSTS: `
   SELECT 
   post._id, post.title, post.slug, post.cover_image_link, post.excerpt, post.tags, CONCAT(account.first_name , ' ', account.last_name) as  author_name, account.profile_image_link as author_profile_image, post.love_count , post.count_minutes_read,   post.created_at 
@@ -9,6 +11,13 @@ exports.queryList = {
   inner JOIN account ON post.author = account._id
   where published = $1
   order by  created_at DESC LIMIT $2 OFFSET $3`,
+  GET_ALL_POSTS_WITH_SEARCH: `
+  SELECT 
+  post._id, post.title, post.slug, post.cover_image_link, post.excerpt, post.tags, CONCAT(account.first_name , ' ', account.last_name) as  author_name, account.profile_image_link as author_profile_image, post.love_count , post.count_minutes_read,   post.created_at 
+  FROM post
+  inner JOIN account ON post.author = account._id
+  where published = $1 AND  title ILIKE $2
+  order by  created_at DESC LIMIT $3 OFFSET $4`,
   GET_ONE_POST_BY_ID : `
   SELECT 
   post._id, post.title, post.slug, post.cover_image_link, post.excerpt, post.tags, post.md,post.published, CONCAT(account.first_name , ' ', account.last_name) as  author_name,
@@ -33,6 +42,7 @@ exports.queryList = {
   order by  created_at DESC LIMIT $2 OFFSET $3
   `,
   GET_POSTS_COUNT: `SELECT COUNT(*) FROM post where published = $1`,
+  GET_POSTS_COUNT_WITH_SEARCH: `SELECT COUNT(*) FROM post where published = $1 AND  title ILIKE $2`,
   GET_POSTS_COUNT_BY_TAG_ID : `SELECT COUNT(*) FROM post_tag where tag= $1`,
   CHECK_IF_TAG_EXIST : `select exists(select 1 from tag where _id = $1)`,
   CHECK_IF_POST_TAG_EXIST : `select exists(select 1 from post_tag where post = $1 AND tag = $2)`,
