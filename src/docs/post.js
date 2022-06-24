@@ -1,7 +1,25 @@
+
+
 module.exports.getPosts = {
   summary: "get Posts",
   operationId: "get Posts",
   parameters: [
+    {
+      name: "search",
+      in: "query",
+      required: false,
+      style: "form",
+      schema: {
+        type: "string",
+      },
+    },
+    {
+      name: "state",
+      in: "query",
+      required: false,
+      style: "form",
+      schema: { type: "string" },
+    },
     {
       name: "pageNumber",
       in: "query",
@@ -17,13 +35,7 @@ module.exports.getPosts = {
       style: "form",
       schema: { type: "number" },
     },
-    {
-      name: "state",
-      in: "query",
-      required: false,
-      style: "form",
-      schema: { type: "string" },
-    },
+   
   ],
   responses: { 200: { description: "", headers: {} } },
   tags: ["Post"],
