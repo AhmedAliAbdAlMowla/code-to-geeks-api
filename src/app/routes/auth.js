@@ -4,7 +4,7 @@ const authController = require("../controllers/auth");
 const auth = require("../middlewares/auth");
 
 // Signin 
-router.post("/signin", authController.signin);
+router.post("/signin", authController.signIn);
 
 // Signup 
 router.post("/signup",authController.signup); 
@@ -15,12 +15,12 @@ router.patch("/password", auth,authController.updatePassword);
 // Resend Confirmation Email
 router.post("/resend/confirmation/email",authController.reSendConfirmationEmail); 
 
-// Confirmation  webhook
-router.get("/confirmation/:token",authController.confirmation); 
+// Confirm new account endpoint
+router.post("/account/confirm",authController.confirmNewAccount); 
 
 //  Forgot Password
-router.post("/recover",authController.recover);
-router.post("/token/check",authController.checkToken);
+router.post("/account/recover",authController.recover);
+router.post("/code/check",authController.checkCode);
 router.post("/password/reset",authController.resetPassword);
 
 //  Oauth

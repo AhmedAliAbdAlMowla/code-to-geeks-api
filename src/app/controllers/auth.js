@@ -14,16 +14,17 @@ const verficationEmailTemplet = require("../utils/assets/templates/verificationE
  * @route   POST /api/v1/auth/signin
  * @access  Public
  */
-exports.signin = async (req, res) => {
-  const { error } = authValidator.loginValidator(req.body);
+exports.signIn = async (req, res) => {
+  const { error } = authValidator.signInValidator(req.body);
 
   if (error) return res.status(400).json({ message: error.details[0].message });
 
-  let account = await dbConnection.query(authSqlQuery.GET_DATA_FOR_LOGIN, [
+  let account = await dbConnection.query(authSqlQuery.GET_DATA_FOR_SIGNIN, [
     req.body.email,
   ]);
 
   account = account.rows[0];
+
   if (!account)
     return res.status(400).json({ message: "Invalid email or password." });
 
@@ -31,7 +32,7 @@ exports.signin = async (req, res) => {
   if (!account.confirmed)
     return res.status(401).json({
       message:
-        "Account not confirmed please open you email box and confirm your account.",
+        "Account not confirmed please open you email box and confirm your account by code.",
     });
 
   const validPassword = await bcrypt.compare(
@@ -52,8 +53,22 @@ exports.signin = async (req, res) => {
     }
   );
 
-  res.status(200).json({ message: "succes Auth", token: token });
+  res
+    .status(200)
+    .json({
+      payload: {
+        _id: account._id,
+        firstName: account.first_name,
+        lastName: account.last_name,
+        role: account.rolle,
+        profileImageLink: account.profile_image_link,
+        bio: account.bio,
+        token,
+      },
+      message: "succes Auth",
+    });
 };
+
 /**
  * @desc    signup user
  * @route   POST /api/v1/auth/signup
@@ -85,10 +100,15 @@ exports.signup = async (req, res) => {
 
   await dbConnection.query(authSqlQuery.CREATE_ACCOUNT, accountData);
   res.status(201).json({
-    message: "Account created.",
+    message:
+      "Account created please open you email box and confirm your account by code..",
   });
 
-  await sendConfirmationEmailFunc(req.body.email);
+  await sendConfirmationEmailFunc(
+    "use this code to confirm your account : ",
+    "Confirm new account code",
+    req.body.email
+  );
 };
 
 /**
@@ -105,21 +125,22 @@ exports.updatePassword = async (req, res) => {
   if (error) return res.status(400).json({ message: error.details[0].message });
 
   let user = await dbConnection.query(authSqlQuery.GET_ACCOUNT_PASSWORD, [
-    req.user.id,
+    req.user._id,
   ]);
+
   const oldPassword = user.rows[0].password;
 
   // check old password
   const validPassword = await bcrypt.compare(req.body.password, oldPassword);
 
   if (!validPassword)
-    return res.status(401).json({ message: "Invalid  old password." });
+    return res.status(401).json({ message: "Invalid old password." });
   // hashing new password
   const salt = await bcrypt.genSalt(10);
   req.body.newPassword = await bcrypt.hash(req.body.newPassword, salt);
   await dbConnection.query(authSqlQuery.UPDATE_ACCOUNT_PASSWORD, [
     req.body.newPassword,
-    req.user.id,
+    req.user._id,
   ]);
   res.status(200).json({ message: "password updated." });
 };
@@ -148,50 +169,46 @@ exports.recover = async (req, res) => {
         " is not associated with any account. Double-check your email address and try again.",
     });
 
-  //Generate and set password reset code
-  const resetPasswordToken = crypto.randomBytes(3).toString("hex");
-  let resetPasswordExpires = Date.now() + 1200000; //expires in an 20 minutes
+  await sendConfirmationEmailFunc(
+    "use this code to recover your account : ",
+    "Forget password code",
+    req.body.email
+  );
 
-  await dbConnection.query(authSqlQuery.UPDATE_PASSWORD_VERIFICATION_TOKEN, [
-    resetPasswordToken,
-    resetPasswordExpires,
-    req.body.email,
-  ]);
-
-  //  Send mail
-
-  const emailText = "The password reset code is : " + resetPasswordToken;
-  const emailSubject =
-    "(CODETOGEEKS) Sending code to confirm change password :";
-  await Email.sendMail(emailSubject, emailText, " ", req.body.email);
-
-  res.status(200).json({ message: " Send password reset code is success." });
+  res.status(200).json({ message: "Send password reset code is success." });
 };
 
 /**
- * @desc    Check recover token
- * @route   POST /api/v1/auth/token/check
+ * @desc    Check recover code
+ * @route   POST /api/v1/auth/code/check
  * @access  Public
  */
-exports.checkToken = async (req, res) => {
-  console.log(req.body);
+exports.checkCode = async (req, res) => {
+  const code = req.body.code;
+  // validate code
+  const { error } = authValidator.confirmationCodeValidator({
+    code,
+  });
+
+  if (error) return res.status(400).json({ message: error.details[0].message });
+
   const user = await dbConnection.query(authSqlQuery.CHECH_TOKENT_IS_FIND, [
-    req.body.token,
+    code,
   ]);
 
   if (!user.rows.length)
     return res
       .status(401)
-      .json({ message: "Password reset token is invalid or has expired." });
+      .json({ message: "Password reset code is invalid or has expired." });
 
   const resetPasswordExpires = user.rows[0].reset_password_expires.getTime();
 
   if (resetPasswordExpires < Date.now())
     return res
       .status(401)
-      .json({ message: "Password reset token has expired." });
+      .json({ message: "Password reset code has expired." });
 
-  return res.status(200).json({ message: "Token auth is correct." });
+  return res.status(200).json({ message: "Code auth is correct." });
 };
 /**
  * @desc    Reset password
@@ -199,35 +216,33 @@ exports.checkToken = async (req, res) => {
  * @access  Public
  */
 exports.resetPassword = async (req, res) => {
-  // validate newPassword
-  const { error } = authValidator.updateValidator({
-    password: req.body.password,
-  });
+  // validate code and new password
+  const { error } = authValidator.resetPasswordAttributeValidator(req.body);
 
   if (error) return res.status(400).json({ message: error.details[0].message });
 
   const user = await dbConnection.query(authSqlQuery.CHECH_TOKENT_IS_FIND, [
-    req.body.token,
+    req.body.code,
   ]);
 
   if (!user.rows.length)
     return res
       .status(401)
-      .json({ message: "Password reset token is invalid or has expired." });
+      .json({ message: "Password reset code is invalid or has expired." });
 
   const resetPasswordExpires = user.rows[0].reset_password_expires.getTime();
 
   if (resetPasswordExpires < Date.now())
     return res
       .status(401)
-      .json({ message: "Password reset token has expired." });
+      .json({ message: "Password reset code has expired." });
 
   const salt = await bcrypt.genSalt(10);
   req.body.password = await bcrypt.hash(req.body.password, salt);
 
   await dbConnection.query(authSqlQuery.RESET_ACCOUNT_PASSWORD, [
     req.body.password,
-    req.body.token,
+    req.body.code,
   ]);
 
   res.status(200).json({ message: "Your password has been updated." });
@@ -263,27 +278,68 @@ module.exports.reSendConfirmationEmail = async (req, res) => {
   res.status(200).json({
     message: "Confirmation email sended.",
   });
-  await sendConfirmationEmailFunc(req.body.email);
+
+  await sendConfirmationEmailFunc(
+    "use this code to confirm your account : ",
+    "Confirm new account code",
+    req.body.email
+  );
 };
 
 /**
  * @desc    Confirmation account
- * @route   GET /api/v1/auth/confirmation/:token
+ * @route   Post /api/v1/auth/confirm
  * @access  Public webhook
  */
 
-module.exports.confirmation = async (req, res) => {
-  let decoded;
-  try {
-    decoded = await JWT.verify(req.params.token, process.env.JWT_EMAIL_SECRET);
-  } catch (err) {
-    return res.status(403).send("<h3>Url is expired..</h3>");
-  }
+module.exports.confirmNewAccount = async (req, res) => {
+  const code = req.body.code;
+  // validate code
+  const { error } = authValidator.confirmationCodeValidator({
+    code,
+  });
 
-  await dbConnection.query(authSqlQuery.CONFIRM_ACCOUNT_BY_EMAIL, [
-    decoded.email,
+  if (error) return res.status(400).json({ message: error.details[0].message });
+
+  let user = await dbConnection.query(authSqlQuery.CHECH_TOKENT_IS_FIND, [
+    code,
   ]);
-  res.status(200).send("<h3>Successful  confirmation..✌️✌️</h3>");
+
+  if (!user.rows.length)
+    return res
+      .status(401)
+      .json({ message: "Confirmation code is invalid or has expired ." });
+  user = user.rows[0];
+  const resetPasswordExpires = user.reset_password_expires.getTime();
+
+  if (resetPasswordExpires < Date.now())
+    return res.status(401).json({ message: "Confirmation code has expired." });
+
+  await dbConnection.query(authSqlQuery.CONFIRM_ACCOUNT_BY_EMAIL, [user.email]);
+
+  const token = JWT.sign(
+    {
+      _id: user._id,
+      name: user.first_name + " " + user.last_name,
+      role: user.role,
+    },
+    process.env.JWT_PRIVIAT_KEY,
+    {
+      expiresIn: "48h",
+    }
+  );
+  res.status(200).json({
+    payload: {
+      _id: user._id,
+      firstName: user.first_name,
+      lastName: user.last_name,
+      role: user.rolle,
+      profileImageLink: user.profile_image_link,
+      bio: user.bio,
+      token,
+    },
+    message: "succes Auth",
+  });
 };
 
 //                        Oauth
@@ -301,7 +357,6 @@ exports.googleSignin = async (req, res) => {
   let googleToken = req.body.token;
   let decodeOfGoogleToken = JWT.decode(googleToken);
 
-  console.log(decodeOfGoogleToken)
   // validate some variations in token
   if (
     decodeOfGoogleToken.aud !== process.env.OAUTH_GOOGLE_CLIENT_ID ||
@@ -318,19 +373,17 @@ exports.googleSignin = async (req, res) => {
   );
 
   if (email_exist.rows[0].exists === true) {
-    let account = await dbConnection.query(authSqlQuery.GET_DATA_FOR_LOGIN, [
+    let account = await dbConnection.query(authSqlQuery.GET_DATA_FOR_SIGNIN, [
       decodeOfGoogleToken.email,
     ]);
 
     account = account.rows[0];
 
     if (account.type === "registred") {
-      return res
-        .status(400)
-        .json({
-          message:
-            "This email have registred account , please try login with this email and password !",
-        });
+      return res.status(400).json({
+        message:
+          "This email have registred account , please try login with this email and password !",
+      });
     } else {
       const newAuthToken = await JWT.sign(
         {
@@ -343,43 +396,66 @@ exports.googleSignin = async (req, res) => {
           expiresIn: "1d",
         }
       );
-      return res
-        .status(200)
-        .json({ message: "succes Auth", token: newAuthToken });
+      return res.status(200).json({
+        payload: {
+          _id: account._id,
+          firstName: account.first_name,
+          lastName: account.last_name,
+          role: account.rolle,
+          profileImageLink: account.profile_image_link,
+          bio: account.bio,
+          token: newAuthToken,
+        },
+        message: "succes Auth",
+      });
     }
-    
   } else {
     const accountData = [
       decodeOfGoogleToken.given_name,
       decodeOfGoogleToken.family_name,
       decodeOfGoogleToken.email,
       decodeOfGoogleToken.picture,
-      'google'
+      "google",
     ];
 
-  
-   let result  =  await dbConnection.query(authSqlQuery.CREATE_OAUTH_ACCOUNT, accountData);
-    
-   result = result.rows[0];
-   
+    let result = await dbConnection.query(
+      authSqlQuery.CREATE_OAUTH_ACCOUNT,
+      accountData
+    );
 
-  const newAuthToken = await JWT.sign(
-    {
-      _id: result._id,
-      name:       decodeOfGoogleToken.given_name + ' ' + decodeOfGoogleToken.family_name,
-      role: 'user'
-    },
-    process.env.JWT_PRIVIAT_KEY,
-    {
-      expiresIn: "1d",
-    }
-  );
-  return res
-    .status(200)
-    .json({ message: "succes Auth", token: newAuthToken });
+    result = result.rows[0];
 
+    const newAuthToken = await JWT.sign(
+      {
+        _id: result._id,
+        name:
+          decodeOfGoogleToken.given_name +
+          " " +
+          decodeOfGoogleToken.family_name,
+        role: "user",
+      },
+      process.env.JWT_PRIVIAT_KEY,
+      {
+        expiresIn: "1d",
+      }
+    );
+    return res
+      .status(200)
+      .json({
+
+        payload: {
+          _id: result._id,
+          firstName: decodeOfGoogleToken.given_name,
+          lastName: decodeOfGoogleToken.family_name,
+          role: 'user',
+          profileImageLink: decodeOfGoogleToken.picture,
+          bio: null,
+          token: newAuthToken,
+        },
+        message: "succes Auth",
+
+      });
   }
-
 };
 
 // #            functions
@@ -388,23 +464,19 @@ exports.googleSignin = async (req, res) => {
  * @desc    Send Confirmation Email Function
  * @access  Just use in User Controller
  */
-const sendConfirmationEmailFunc = async (email) => {
-  const token = await JWT.sign(
-    {
-      email,
-    },
-    process.env.JWT_EMAIL_SECRET,
-    {
-      expiresIn: "10min", // 10 minutes
-    }
-  );
+const sendConfirmationEmailFunc = async (emailText, emailSubject, email) => {
+  //Generate and set password reset code
+  const resetPasswordCode = crypto.randomBytes(3).toString("hex");
+  let resetPasswordExpires = Date.now() + 1200000; //expires in an 20 minutes
+
+  await dbConnection.query(authSqlQuery.UPDATE_PASSWORD_VERIFICATION_TOKEN, [
+    resetPasswordCode,
+    resetPasswordExpires,
+    email,
+  ]);
+
   //  Send mail
-  await Email.sendMail(
-    Constants.notificationConfirmAccountEmail.emailSubject,
-    "",
-    verficationEmailTemplet(
-      Constants.notificationConfirmAccountEmail.emailContent + token
-    ),
-    email
-  );
+
+  emailText = emailText + resetPasswordCode;
+  await Email.sendMail(emailSubject, emailText, " ", email);
 };

@@ -30,21 +30,13 @@ module.exports.signupValidator = (user) => {
 };
 
 /**
- * @desc     Validate login
+ * @desc     Validate signin
  * @returns  Result after validate user
  */
-module.exports.loginValidator = (user) => {
+module.exports.signInValidator = (user) => {
   const schema = Joi.object({
     email: Joi.string().max(100).min(5).email().required(),
-    password: Joi.string().max(15).min(8)
-    .regex(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/)
-      .required()
-      .label("password")
-      .messages({
-        "string.min": "password must at least 8 characters",
-        "object.regex": "password must have at least 8 characters",
-        "string.pattern.base": "password must have at least 1 uppercase lowercase special character and number"
-      }),
+    password: Joi.string().max(100).required(),
   });
   return schema.validate(user);
 };
@@ -75,6 +67,40 @@ module.exports.updateValidator = (user) => {
   return schema.validate(user);
 };
 
+/**
+ * @desc     Validate confirmation code 
+ * @returns  Result after validate code
+ */
+module.exports.confirmationCodeValidator = (code) => {
+  const schema = Joi.object({
+    code: Joi.string().max(6).min(6).required(),
+  });
+
+  return schema.validate(code);
+};
+
+/**
+ * @desc     Validate reset password attribute [code , password] 
+ * @returns  Result after validate  [code , password] 
+ */
+ module.exports.resetPasswordAttributeValidator = (attr) => {
+  const schema = Joi.object({
+    code: Joi.string().max(6).min(6).required(),
+    password: Joi.string()
+    .max(15)
+    .min(8)
+    .required()
+    .regex(/^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/)
+    .label("password")
+    .messages({
+      "string.min": "password must at least 8 characters",
+      "object.regex": "password must have at least 8 characters",
+      "string.pattern.base": "password must have at least 1 uppercase lowercase special character and number"
+    }),
+  });
+
+  return schema.validate(attr);
+};
  //         Oauth
 
 

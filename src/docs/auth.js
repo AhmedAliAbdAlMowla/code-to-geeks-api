@@ -58,6 +58,25 @@ module.exports.signup = {
     tags: ['Auth']
 }
 
+module.exports.confirmAccount = {
+
+  "summary": "confirm new account by code ",
+  "operationId": "confirm account",
+  "description": "you can use this end point to confirm new account by code",
+  "parameters": [],
+  "responses": { "200": { "description": "", "headers": {} } },
+  "requestBody": {
+    "required": true,
+    "content": {
+      "application/json": {
+        "schema": { "type": "object"},
+        "example": { "code": "123456" } 
+      }
+    }
+  },
+  "tags": ["Auth"]
+
+}
 module.exports.resendConfirmationEmail = {
     
         "summary": "Resend confirmation email.",
@@ -86,7 +105,7 @@ module.exports.recover = {
 
     "summary": "Accunt  recover ",
     "operationId": "recover",
-    "description": "you can use this end point to  recover accunt by give the email and send tokent to email",
+    "description": "you can use this end point to  recover accunt by give the email and send code to email",
     "parameters": [],
     "responses": { "200": { "description": "", "headers": {} } },
     "requestBody": {
@@ -117,7 +136,7 @@ module.exports.AuthCodeCheck ={
             "content": {
               "application/json": {
                 "schema": { "type": "object"},
-                "example": { "token": "12a9r2" } 
+                "example": { "code": "123456" } 
               }
             }
           },
@@ -129,7 +148,7 @@ module.exports.AuthPasswordReset = {
 
     "summary": "Reset password",
     "operationId": "resetPassword",
-    "description": "you can use this end point to  reset password , you should have a tokent to confirm this operation ",
+    "description": "you can use this end point to  reset password , you should have a code to confirm this operation ",
     "parameters": [],
     "responses": { "200": { "description": "", "headers": {} } },
     "requestBody": {
@@ -140,7 +159,7 @@ module.exports.AuthPasswordReset = {
             "type": "object"
            
           },
-          "example": { "token": "12a9", "password": "#Ahmed123" }
+          "example": { "code": "123456", "password": "#Ahmed123" }
         }
       }
     },
