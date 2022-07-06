@@ -150,3 +150,17 @@ module.exports.getAuthorProfiletData = {
 };
 
 
+//                  interactions
+
+module.exports.getInteractions = {
+
+  summary: "get all interactions .",
+  description: "you can use this end point to get all account.",
+  responses: {
+    200: {
+      description: "",
+      headers: {},
+    },
+  },
+  tags: ["Account"],
+}

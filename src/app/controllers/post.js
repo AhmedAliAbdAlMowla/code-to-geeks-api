@@ -222,23 +222,20 @@ module.exports.get_all = async (req, res) => {
       .status(400)
       .json({ message: "No valid entry found for publish State" });
 
-  let total,posts;
+  let total, posts;
 
-  
-  if(  req.query.search&& (req.query.search !="")){
-    total = await dbConnection.query(postSqlQuerys.GET_POSTS_COUNT_WITH_SEARCH, [
-      publishState === "published",
-      "%" + req.query.search + "%",
-    ]);
+  if (req.query.search && req.query.search != "") {
+    total = await dbConnection.query(
+      postSqlQuerys.GET_POSTS_COUNT_WITH_SEARCH,
+      [publishState === "published", "%" + req.query.search + "%"]
+    );
     posts = await dbConnection.query(postSqlQuerys.GET_ALL_POSTS_WITH_SEARCH, [
       publishState === "published",
       "%" + req.query.search + "%",
       pageSize,
       (pageNumber - 1) * pageSize,
     ]);
-  
-  }
-  else{
+  } else {
     total = await dbConnection.query(postSqlQuerys.GET_POSTS_COUNT, [
       publishState === "published",
     ]);
@@ -328,6 +325,7 @@ module.exports.get_all_by_tag_id = async (req, res) => {
 module.exports.delete = async (req, res) => {
   let result;
   try {
+    await dbConnection.query("BEGIN");
     await dbConnection.query(postSqlQuerys.DELETE_POST_TAG_REL_BY_POST_ID, [
       req.params.id,
     ]);
@@ -335,6 +333,7 @@ module.exports.delete = async (req, res) => {
     result = await dbConnection.query(postSqlQuerys.DELETE_POST_BY_ID, [
       req.params.id,
     ]);
+    await dbConnection.query("COMMIT");
   } catch (err) {
     console.log(err.message);
     await dbConnection.query("ROLLBACK");
@@ -347,4 +346,106 @@ module.exports.delete = async (req, res) => {
       .json({ message: "No valid entry found for provided ID" });
 
   res.status(200).json({ message: "Post deleted." });
+};
+
+//                                love post
+
+module.exports.love = async (req, res) => {
+  await dbConnection.query(postSqlQuerys.INSERT_POST_LOVE, [
+    req.user._id,
+    req.params.id,
+  ]);
+
+  await dbConnection.query(postSqlQuerys.INCREMENT_LOVE_COUNT, [req.params.id]);
+
+  res.status(200).json({ message: "Be loved" });
+};
+
+module.exports.unLove = async (req, res) => {
+  let result = await dbConnection.query(postSqlQuerys.DELETE_POST_LOVE, [
+    req.user._id,
+    req.params.id,
+  ]);
+
+  if (result.rowCount == 0)
+    return res
+      .status(400)
+      .json({ message: "No valid entry found for provided ID" });
+
+  await dbConnection.query(postSqlQuerys.DESCREMENT_LOVE_COUNT, [
+    req.params.id,
+  ]);
+
+  res.status(200).json({ message: "Be unloved" });
+};
+
+
+//                              SAVED POST
+
+/**
+ * @desc    Create new saved post
+ * @route   Post /api/v1/post/save/
+ * @access  Private [auth]
+ */
+ module.exports.savePost = async (req, res) => {
+
+  let result = await dbConnection.query(
+    postSqlQuerys.SAVE_POST,
+    [req.user._id, req.params.id]
+  );
+
+  if (result.rowCount == 0)
+    return res
+      .status(400)
+      .json({ message: "Can not create this saved post for unknown reasons" });
+
+  res.status(201).json({ message: "post saved." });
+};
+
+/**
+ * @desc    Get all saved posts
+ * @route   GET /api/v1/post/saved/
+ * @access  Private [auth]
+ */
+module.exports.getAllSavedPosts = async (req, res) => {
+  // pagination element
+  const pageNumber = parseInt(req.query.pageNumber, 10);
+  const pageSize = parseInt(req.query.pageSize, 10);
+
+  let total = await dbConnection.query(postSqlQuerys.GET_SAVED_POSTS_COUNT);
+  total = total.rows[0].count;
+
+  let savedPosts = await dbConnection.query(postSqlQuerys.GET_ALL_SAVED_POSTS, [
+    req.user._id,
+    pageSize,
+    (pageNumber - 1) * pageSize,
+  ]);
+
+  savedPosts = savedPosts.rows;
+
+  res.status(200).json({
+    total: parseInt(total, 10),
+    savedPosts,
+  });
+};
+
+/**
+ * @desc    un  saved post
+ * @route   POST /api/v1/post/saved/:id
+ * @access  Private [auth]
+ */
+module.exports.unSavePost = async (req, res) => {
+    
+  console.log(req.params.id)
+  const result = await dbConnection.query(postSqlQuerys.UN_SAVE_POST, [
+    req.user._id,
+    req.params.id,
+  ]);
+
+  if (result.rowCount == 0)
+    return res.status(400).json({
+      message: "No valid entry found for provided ID",
+    });
+
+  res.status(200).json({ message: "post be unsaved." });
 };

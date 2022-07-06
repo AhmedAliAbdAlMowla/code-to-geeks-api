@@ -31,5 +31,8 @@ exports.queryList = {
     profile_image_link as author_profile_image, bio, created_at 
     FROM account 
     where _id = $1`,
-    GET_AUTHOR_SOCIAL_LINKS : `select  name, link from social_link where author = $1`
+    GET_AUTHOR_SOCIAL_LINKS : `select  name, link from social_link where author = $1`,
+    GET_LOVE_POSTS: `select post as id from post_love where account = $1  `,
+    GET_SAVED_POSTS : `select post_id as id from saved_post where account_id = $1  order by  created_at DESC`
   };
+  

@@ -257,3 +257,102 @@ module.exports.resetPostCoverImage = {
   
   tags: ["Post"]
 };
+
+
+//                     love post
+
+module.exports.lovePost = {
+  summary: "love post",
+  description: "you can use this end point to maker love for post. ",
+  parameters: [
+    {
+      name: "post_id",
+      in: "path",
+      required: true,
+      style: "form",
+      schema: { type: "string" },
+    },
+  ],
+  responses: { 200: { description: "", headers: {} } },
+
+  tags: ["Post"],
+}
+
+//                      unlove post
+module.exports.unlovePost = {
+  summary: "unlove post",
+  description: "you can use this end point to maker unlove for post. ",
+  parameters: [
+    {
+      name: "post_id",
+      in: "path",
+      required: true,
+      style: "form",
+      schema: { type: "string" },
+    },
+  ],
+
+
+  responses: { 200: { description: "", headers: {} } },
+  tags: ["Post"],
+}
+
+//                          saved posts
+module.exports.getSavedPosts = {
+  summary: "get Saved posts",
+  description: "you can use this end point to get saved posts.",
+  operationId: "get saved posts",
+  parameters: [
+    {
+      name: "pageNumber",
+      in: "query",
+      required: true,
+      style: "form",
+      schema: { type: "number" },
+    },
+    {
+      name: "pageSize",
+      in: "query",
+      required: true,
+      style: "form",
+      schema: { type: "number" },
+    },
+  ],
+  responses: { 200: { description: "", headers: {} } },
+  tags: ["Post"],
+};
+
+module.exports.savePost = {
+  summary: "create new saved post",
+  description: "you can use this end point to create new saved post. ",
+  parameters: [
+    {
+      name: "post_id",
+      in: "path",
+      required: true,
+      style: "form",
+      schema: { type: "string" },
+    },
+  ],
+  
+  responses: { 200: { description: "", headers: {} } },
+
+  tags: ["Post"],
+};
+
+module.exports.unSavedPost = {
+  summary: "delete saved post ",
+  description: "you can use this end point to delete saved post.",
+  parameters: [
+    {
+      name: "post_id",
+      in: "path",
+      required: true,
+      style: "form",
+      schema: { type: "string" },
+    },
+  ],
+  responses: { 200: { description: "", headers: {} } },
+  tags: ["Post"],
+};
+  

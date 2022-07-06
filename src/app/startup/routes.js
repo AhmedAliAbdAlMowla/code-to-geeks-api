@@ -2,7 +2,6 @@ module.exports = (app) => {
     // Routes
     app.use("/api/v1/auth", require("../routes/auth"));
     app.use("/api/v1/account", require("../routes/account"));
-    app.use("/api/v1/saved", require("../routes/savedPost"));
     app.use("/api/v1/post", require("../routes/post"));
     app.use("/api/v1/tag", require("../routes/tag"));
     app.use("/api/v1/file", require("../routes/file"));

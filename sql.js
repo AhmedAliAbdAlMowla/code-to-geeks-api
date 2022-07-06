@@ -64,6 +64,9 @@ module.exports = async () => {
                 PRIMARY KEY (_id)
                 )
             `,
+            `
+            alter table post add constraint love_count check (love_count >= 0);
+            `,
     ,
     `CREATE INDEX slug ON post(slug);`,
     `
@@ -89,7 +92,19 @@ module.exports = async () => {
         account_id uuid REFERENCES account(_id),
         created_at TIMESTAMP NOT NULL,
         PRIMARY KEY (_id)
-        )
+        ),
+        CREATE TABLE post_love(
+            _id uuid DEFAULT uuid_generate_v4(),
+            account uuid REFERENCES account(_id),
+              post uuid  REFERENCES post(_id),
+            PRIMARY KEY (_id)
+            )
+            
 		`,
+        `
+        ALTER TABLE post_love
+       ADD UNIQUE (account, post)`,
+       ` ALTER TABLE saved_post
+       ADD UNIQUE (account_id, post_id)`
   ];
 };

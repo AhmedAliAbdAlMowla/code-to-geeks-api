@@ -22,6 +22,7 @@ router.post("/profile/social", [auth, author], accountController.createSocialLin
 router.get("/profile/social", [auth, author], accountController.getAllSocialLinks);
 // author 
 router.get("/author/profile/:id", accountController.getAuthorProfileData);
-
+// interactions
+router.get("/interactions",auth, accountController.getInteractions);
 
 module.exports = router;

@@ -6,7 +6,6 @@ const tag = require("./tag");
 const message = require("./message");
 const about = require("./aboutAs");
 const file = require("./file");
-const savedPost = require('./savedPost')
 module.exports = {
   openapi: "3.0.0",
   servers: [
@@ -17,7 +16,7 @@ module.exports = {
       variables: {},
     },
     {
-      url: "http://3.8.56.231/api/v1/",
+      url:  "http://157.175.208.59/api/v1/",
       description: "AWS",
       variables: {},
     },
@@ -66,11 +65,7 @@ module.exports = {
     {
       name: "File",
       description: "Everything about files.",
-    },
-    {
-      name: "Saved Post",
-      description: "Everything about saved post.",
-    },
+    }
     /*
        {
       name: "HomePage",
@@ -143,6 +138,10 @@ module.exports = {
       get : account.getAuthorProfiletData
  
     },
+    
+    "/account/interactions":{
+      get: account.getInteractions
+    },
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -184,6 +183,21 @@ module.exports = {
       patch:  post.update,
       delete: post.deletePost,
     },
+    "/post/love/{post_id}": {
+      post:  post.lovePost,
+    },
+    "/post/unlove/{post_id}": {
+      post:  post.unlovePost,
+    },
+    "/post/save" : {
+      get  : post.getSavedPosts,     
+    },
+    "/post/save/{post_id}" :{
+      post : post.savePost
+    },
+    "/post/unsave/{post_id}": {
+      post : post.unSavedPost
+    },
 
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -210,16 +224,7 @@ module.exports = {
       patch : file.update,
       delete : file.deleteFile
     },
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    "/saved" : {
-      get  : savedPost.getSavedPosts,
-      post : savedPost.create,
-     
-    },
-    "/saved/{saved_post_id}" :{
-      delete : savedPost.deleteSavedPost
-    },
+  
     
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
