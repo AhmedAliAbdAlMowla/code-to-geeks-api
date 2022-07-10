@@ -351,6 +351,17 @@ module.exports.delete = async (req, res) => {
 //                                love post
 
 module.exports.love = async (req, res) => {
+
+
+  let result = await dbConnection.query(postSqlQuerys.CHECK_POST_ALREADY_LOVED,[
+    req.user._id,
+    req.params.id,
+  ]);
+
+  if (result.rows[0].exists === true)
+    return res.status(400).json({"msessage" : "Post has already been loved."})
+  
+
   await dbConnection.query(postSqlQuerys.INSERT_POST_LOVE, [
     req.user._id,
     req.params.id,
@@ -389,6 +400,14 @@ module.exports.unLove = async (req, res) => {
  */
  module.exports.savePost = async (req, res) => {
 
+  let isExist = await dbConnection.query(postSqlQuerys.CHECK_POST_ALREADY_SAVED,[
+    req.user._id,
+    req.params.id,
+  ]);
+
+  if (isExist.rows[0].exists === true)
+    return res.status(400).json({"msessage" : "Post has already been saved."})
+  
   let result = await dbConnection.query(
     postSqlQuerys.SAVE_POST,
     [req.user._id, req.params.id]

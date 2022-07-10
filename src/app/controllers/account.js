@@ -177,17 +177,26 @@ module.exports.getAuthorProfileData = async (req, res) => {
  * @access  private
  */
 module.exports.getInteractions = async (req, res) => {
-  const savedPosts = await dbConnection.query(accountSqlQuery.GET_SAVED_POSTS, [
+  const savedPostsResult = await dbConnection.query(accountSqlQuery.GET_SAVED_POSTS, [
     req.user._id,
   ]);
 
-  const lovePosts = await dbConnection.query(accountSqlQuery.GET_LOVE_POSTS, [
+  const lovePostsResult = await dbConnection.query(accountSqlQuery.GET_LOVE_POSTS, [
     req.user._id,
   ]);
+  let savedPosts = [];
+  let lovedPosts = [];
+  for (let i = 0 ;i < savedPostsResult.rows.length; i++){
+    savedPosts.push(savedPostsResult.rows[i].id)
+  }
+
+  for (let i = 0 ;i < lovePostsResult.rows.length; i++){
+    lovedPosts.push(lovePostsResult.rows[i].id)
+  }
   res.status(200).json({
     payload: {
-      savedPosts: savedPosts.rows,
-      lovedPosts: lovePosts.rows,
+      savedPosts,
+      lovedPosts,
     },
   });
 };

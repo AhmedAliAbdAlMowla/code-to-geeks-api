@@ -69,7 +69,7 @@ exports.queryList = {
   UPDATE_POST_COVER_IMAGE:`UPDATE  post SET cover_image_link=$1, cover_image_s3_key=$2 WHERE _id =$3`,
 
 //                                love post increment and decrement operators
-
+CHECK_POST_ALREADY_LOVED: `SELECT exists(SELECT 1 post_love FROM post_love WHERE account = $1 AND post = $2)`,
 INCREMENT_LOVE_COUNT : `UPDATE post SET love_count = love_count + 1 WHERE _id = $1`,
 DESCREMENT_LOVE_COUNT : `UPDATE post SET love_count = love_count - 1 WHERE _id = $1`,
 INSERT_POST_LOVE: `INSERT INTO post_love(account, post) VALUES($1, $2)`,
@@ -77,8 +77,8 @@ DELETE_POST_LOVE: `DELETE FROM post_love WHERE account =$1 AND post = $2`,
 
 
   //                                             SAVED POST
+  CHECK_POST_ALREADY_SAVED: `SELECT exists(SELECT 1 post_love FROM saved_post WHERE account_id = $1 AND post_id = $2)`,
   SAVE_POST : `INSERT INTO saved_post(account_id, post_id, created_at) VALUES($1, $2, CURRENT_TIMESTAMP)`,
-  
   GET_ALL_SAVED_POSTS: `
   SELECT sp._id, post._id as post_id, post.title, post.slug, post.cover_image_link, 
   post.excerpt, post.tags, CONCAT(account.first_name , ' ', account.last_name) as  author_name,
