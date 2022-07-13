@@ -11,16 +11,18 @@ module.exports.queryList = {
   CHECK_EMAIL_IS_EXIST: ` select exists(select 1 from account where email = $1)`,
 
   GET_DATA_FOR_SIGNIN: `SELECT _id, first_name, last_name, role, password, confirmed, type ,profile_image_link, bio  FROM account WHERE email = $1`,
-  
  
-  CONFIRM_ACCOUNT_BY_EMAIL: 'UPDATE account SET confirmed = true  , reset_password_token= null ,reset_password_expires =null WHERE email =$1',
+
+  CHECK_IF_ACCOUNT_ALREADY_VERIFIED: `select exists(select 1 from account where email = $1 AND confirmed = true)`,
+  CONFIRM_ACCOUNT_BY_EMAIL: `UPDATE account SET confirmed = true WHERE email =$1 RETURNING  _id, 
+  first_name, last_name, role,profile_image_link, bio`,
   GET_ACCOUNT_PASSWORD: `SELECT password FROM account WHERE _id= $1`,
   UPDATE_ACCOUNT_PASSWORD: `UPDATE account SET password = $1  WHERE _id=$2`,
   
    //                                       ACCOUNT RECOVERY
-   UPDATE_PASSWORD_VERIFICATION_TOKEN:`UPDATE account SET reset_password_token = $1
+   UPDATE_PASSWORD_VERIFICATION_CODE:`UPDATE account SET reset_password_code = $1
    ,reset_password_expires =  (to_timestamp($2/ 1000.0))  WHERE email = $3`,
-   CHECH_TOKENT_IS_FIND : `SELECT _id, first_name, last_name,email, role, confirmed, type ,profile_image_link, bio,reset_password_expires FROM account where reset_password_token = $1`,
-   RESET_ACCOUNT_PASSWORD: `UPDATE account SET password = $1 , reset_password_token= null ,reset_password_expires =null WHERE reset_password_token=$2`,
+   CHECH_TOKENT_IS_FIND : `SELECT _id, first_name, last_name,email, role, confirmed, type ,profile_image_link, bio,reset_password_expires FROM account where reset_password_code = $1`,
+   RESET_ACCOUNT_PASSWORD: `UPDATE account SET password = $1 , reset_password_code= null ,reset_password_expires =null WHERE reset_password_code=$2`,
    
 };

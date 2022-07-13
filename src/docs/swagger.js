@@ -87,7 +87,7 @@ module.exports = {
     "/auth/signup": {
       post: auth.signup,
     },
-    "/auth/resend/confirmation/email": {
+    "/auth/resend/verification/email": {
       post: auth.resendConfirmationEmail,
     },
     "/auth/account/recover": {
@@ -100,8 +100,8 @@ module.exports = {
       post: auth.AuthPasswordReset,
     },
 
-    "/auth/account/confirm" :{
-      post: auth.confirmAccount
+    "/auth/verification/{token}" :{
+      post: auth.emailVerification
     },
     "/auth/password": {
       patch: auth.AuthPasswordUpdate,

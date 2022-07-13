@@ -1,4 +1,4 @@
-module.exports = (link) => {
+module.exports = (code) => {
   return `
   <!DOCTYPE html>
   <html lang="en-US">
@@ -97,7 +97,7 @@ module.exports = (link) => {
                             font-family: 'Rubik', sans-serif;
                           "
                         >
-                          Please verify your account
+                          Reset password code.
                         </h1>
                         <span
                           style="
@@ -116,27 +116,22 @@ module.exports = (link) => {
                             margin: 0;
                           "
                         >
-                          Thank you for choosing Codetogeeks. Verify your email to
-                          finish signing up procedures.
+                          Thank you for choosing Codetogeeks. Use the following
+                          code to complete reset password procedures.
                         </p>
-  
-                        <a
-                          href=${link}
+                         <br/>
+                        <h2
                           style="
                             background: #205375;
-                            text-decoration: none !important;
-                            font-weight: 500;
-                            margin-top: 35px;
+                            margin: 0 auto;
+                            width: max-content;
+                            padding: 0 10px;
                             color: #fff;
-                            text-transform: uppercase;
-                            font-size: 14px;
-                            padding: 10px 24px;
-                            display: inline-block;
-                            border-radius: 50px;
+                            border-radius: 4px;
                           "
                         >
-                          Verify my account</a
-                        >
+                          ${code}
+                        </h2>
                       </td>
                     </tr>
                     <tr>
@@ -174,5 +169,7 @@ module.exports = (link) => {
     </body>
   </html>
   
-`
+`;
 };
+
+

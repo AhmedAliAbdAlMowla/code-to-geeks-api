@@ -5,24 +5,31 @@ const accountController = require("../controllers/account");
 const auth = require("../middlewares/auth");
 const author = require("../middlewares/author")
 
-// // get user profile data
+ // get account profile data
 router.get("/", auth, accountController.getAccountData);
 
- // update user profile data
+ // update account profile data
 router.patch("/", auth, accountController.updateAccount);
 
+
+ // get account profile image
+ router.get("/profile/image", auth,  accountController.getProfileImage);
 // upload profile image
 router.post("/profile/image", auth, multer.single("file"), accountController.uploadProfileImage )
 
- // get account profile image
-router.get("/profile/image", auth,  accountController.getProfileImage);
 
-// create Social Link 
-router.post("/profile/social", [auth, author], accountController.createSocialLink);
-router.get("/profile/social", [auth, author], accountController.getAllSocialLinks);
-// author 
-router.get("/author/profile/:id", accountController.getAuthorProfileData);
-// interactions
+
+// get account interactions
 router.get("/interactions",auth, accountController.getInteractions);
+
+
+//                          A U T H O R
+// get Social Link to author account profile data
+router.get("/profile/social", [auth, author], accountController.getSocialLinks);
+// add Social Link to author account profile data
+router.post("/profile/social", [auth, author], accountController.createSocialLink);
+// get author account profile data 
+router.get("/author/profile/:id", accountController.getAuthorAccountProfileData);
+
 
 module.exports = router;

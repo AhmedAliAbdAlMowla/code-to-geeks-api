@@ -8,7 +8,7 @@ const {
 } = require("../utils/validator/account");
 /*
  * @desc    Get account profile data
- * @route   GET /api/v1/account/profile
+ * @route   GET /api/v1/account/
  * @access  Private
  */
 module.exports.getAccountData = async (req, res) => {
@@ -18,13 +18,16 @@ module.exports.getAccountData = async (req, res) => {
   );
 
   res.status(200).json({
-    accountData: accountData.rows[0],
+    payload: {
+      accountData: accountData.rows[0],
+    },
+    message: "Account profile data retrieved successfully.",
   });
 };
 
 /**
  * @desc    Update account profile data
- * @route   PATCH /api/v1/account/profile
+ * @route   PATCH /api/v1/account/
  * @access  Private
  */
 module.exports.updateAccount = async (req, res) => {
@@ -33,14 +36,14 @@ module.exports.updateAccount = async (req, res) => {
   if (error) return res.status(400).json({ message: error.details[0].message });
 
   // update
-  let updateCol = {};
+  let updateColumn = {};
   let updateDate = [];
   Object.keys(req.body).forEach(function (key) {
-    updateCol[accountTableKey[key]] = "";
+    updateColumn[accountTableKey[key]] = "";
     updateDate.push(req.body[key]);
   });
   const result = await dbConnection.query(
-    accountSqlQuery.UPDATE_ACCOUNT_DATA(req.user._id, "account", updateCol),
+    accountSqlQuery.UPDATE_ACCOUNT_DATA(req.user._id, "account", updateColumn),
     updateDate
   );
 
@@ -49,11 +52,13 @@ module.exports.updateAccount = async (req, res) => {
       .status(400)
       .json({ message: "No valid entry found for provided ID" });
 
-  res.status(200).json({ message: "Successful  update" });
+  res
+    .status(200)
+    .json({ message: "Account profile data updated successfully." });
 };
 
 /**
- * @desc    Upload profile image
+ * @desc    Upload account profile image
  * @route   POST /api/v1/account/profile/image
  * @access  Private
  */
@@ -72,7 +77,7 @@ module.exports.uploadProfileImage = async (req, res) => {
   // upload new image to aws S3
   const imageData = await s3Service.uploadFile("userProfileImage/", req.file);
 
-  //  update accountby new image data
+  //  update account by new image data
   await dbConnection.query(accountSqlQuery.UPDATE_ACCOUNT_PROFILE_IMAGE, [
     imageData.fileLink,
     imageData.s3_key,
@@ -85,14 +90,18 @@ module.exports.uploadProfileImage = async (req, res) => {
     await s3Service.deleteOne(profileImageS3Key.rows[0]);
   }
 
-  res.status(200).json({
-    message: "Successful upload",
-    link: imageData.fileLink,
+  res.status(201).json({
+    payload: {
+      link: imageData.fileLink,
+    },
+    message: "Account profile image changed successfully.",
   });
 };
 
+
+
 /**
- * @desc    Get  profile image
+ * @desc    Get  account profile image
  * @route   GET  /api/v1/account/profile/image
  * @access  Private
  */
@@ -103,24 +112,30 @@ module.exports.getProfileImage = async (req, res) => {
   );
 
   if (imageData.rows[0].profile_image_link === null)
-    return res.status(400).json({ message: "image not uploaded" });
+    return res
+      .status(400)
+      .json({ message: "Account does not have a profile image!" });
 
-  res.status(200).json(imageData.rows[0]);
+  res.status(200).json({
+    payload: {
+      profileImageLink: imageData.rows[0].profile_image_link,
+    },
+    message: "Account profile data retrieved successfully.",
+  });
 };
 
 /**
- * @desc    POST  Social Link
- * @route   GET  /api/v1/account/profile/image
+ * @desc    Create  Social link
+ * @route   POST   /api/v1/account/profile/social
  * @access  Private
  */
 
 module.exports.createSocialLink = async (req, res) => {
+  const data = req.body;
   // validation
-  const { error } = createSocialLink(req.body);
+  const { error } = createSocialLink(data);
 
   if (error) return res.status(400).json({ message: error.details[0].message });
-
-  const data = req.body;
 
   let result = await dbConnection.query(accountSqlQuery.INSERT_SOCIAL_LINK, [
     req.user._id,
@@ -128,7 +143,7 @@ module.exports.createSocialLink = async (req, res) => {
     data.link,
   ]);
 
-  if (result.rowCount == 0)
+  if (result.rowCount === 0)
     return res
       .status(400)
       .json({ message: "Can not create this link for unknown reasons" });
@@ -136,26 +151,37 @@ module.exports.createSocialLink = async (req, res) => {
   res.status(201).json({ message: "link created" });
 };
 
-module.exports.getAllSocialLinks = async (req, res) => {
+/**
+ * @desc    GET  Social links
+ * @route   GET  /api/v1/account/profile/social
+ * @access  Private
+ */
+
+module.exports.getSocialLinks = async (req, res) => {
   const links = await dbConnection.query(accountSqlQuery.GET_ALL_SOCIAL_LINKS, [
     req.user._id,
   ]);
 
-  res.status(200).json({ links: links.rows });
+  res.status(200).json({
+    payload: {
+      links: links.rows
+    },
+    message: "Account profile social links retrieved successfully.",
+     });
 };
 
 /*
  * @desc    Get author profile data
- * @route   GET /api/v1/account/profile
+ * @route   GET /api/v1/account/author/profile/:id
  * @access  private
  */
-module.exports.getAuthorProfileData = async (req, res) => {
-  const authorProfileData = await dbConnection.query(
+module.exports.getAuthorAccountProfileData = async (req, res) => {
+  const data = await dbConnection.query(
     accountSqlQuery.GET_AUTHOR_PROFILE_DATA,
     [req.params.id]
   );
 
-  if (authorProfileData.rowCount === 0)
+  if (data.rowCount === 0)
     return res
       .status(400)
       .json({ message: "No valid entry found for provided ID" });
@@ -166,8 +192,13 @@ module.exports.getAuthorProfileData = async (req, res) => {
   );
 
   res.status(200).json({
-    authorProfileData: authorProfileData.rows,
-    authorSocialLinks: authorSocialLinks.rows,
+    payload : {
+      authorData: data.rows,
+      authorSocialLinks: authorSocialLinks.rows,
+    },
+    message: "Author account profile data retrieved successfully.",
+
+
   });
 };
 
@@ -177,26 +208,33 @@ module.exports.getAuthorProfileData = async (req, res) => {
  * @access  private
  */
 module.exports.getInteractions = async (req, res) => {
-  const savedPostsResult = await dbConnection.query(accountSqlQuery.GET_SAVED_POSTS, [
-    req.user._id,
-  ]);
 
-  const lovePostsResult = await dbConnection.query(accountSqlQuery.GET_LOVE_POSTS, [
-    req.user._id,
-  ]);
+  const savedPostsResult = await dbConnection.query(
+    accountSqlQuery.GET_SAVED_POSTS,
+    [req.user._id]
+  );
+
+  const lovePostsResult = await dbConnection.query(
+    accountSqlQuery.GET_LOVE_POSTS,
+    [req.user._id]
+  );
+
   let savedPosts = [];
   let lovedPosts = [];
-  for (let i = 0 ;i < savedPostsResult.rows.length; i++){
-    savedPosts.push(savedPostsResult.rows[i].id)
+
+  for (let i = 0; i < savedPostsResult.rows.length; i++) {
+    savedPosts.push(savedPostsResult.rows[i].id);
   }
 
-  for (let i = 0 ;i < lovePostsResult.rows.length; i++){
-    lovedPosts.push(lovePostsResult.rows[i].id)
+  for (let i = 0; i < lovePostsResult.rows.length; i++) {
+    lovedPosts.push(lovePostsResult.rows[i].id);
   }
+  
   res.status(200).json({
     payload: {
       savedPosts,
       lovedPosts,
     },
+    message : "Account interactions data retrieved successfully."
   });
 };

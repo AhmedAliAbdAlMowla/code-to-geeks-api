@@ -1,6 +1,6 @@
 module.exports.getAccountData = {
-  summary: "get account data",
-  description: "you can use this end point to get account data",
+  summary: "Get account profile data",
+  description: "you can use this end point to get account profile data",
   responses: {
     200: {
       description: "",
@@ -11,8 +11,8 @@ module.exports.getAccountData = {
 };
 
 module.exports.updateAccountData = {
-  summary: "update account data",
-  description: "you can use this end point to update account data. ",
+  summary: "Update account profile data",
+  description: "you can use this end point to update account profile data. ",
 
   responses: { 200: { description: "", headers: {} } },
   requestBody: {
@@ -34,8 +34,8 @@ module.exports.updateAccountData = {
 };
 
 module.exports.uploadAccountProfileImage = {
-  summary: "upload account profile image",
-  description: "you can use this end point to change profile image.",
+  summary: "Upload account profile image",
+  description: "you can use this end point to change account profile image.",
   operationId: "",
 
   responses: { 200: { description: "", headers: {} } },
@@ -62,8 +62,8 @@ module.exports.uploadAccountProfileImage = {
 
 
 module.exports.getProfileImage = {
-  summary: "get profile image link",
-  description: "you can use this end point to profile image link",
+  summary: "Get account profile image link",
+  description: "you can use this end point to account profile image link",
   responses: {
     200: {
       description: "",
@@ -77,8 +77,8 @@ module.exports.getProfileImage = {
 //                              SOCIAL_LINK
 
 module.exports.createSocialLink = {
-  summary: "create new social link",
-  description: "you can use this end point to create new social link. ",
+  summary: "Create new social link [Author]",
+  description: "you can use this end point to create new social link.",
   responses: { 200: { description: "", headers: {} } },
   requestBody: {
     required: true,
@@ -99,8 +99,8 @@ module.exports.createSocialLink = {
 };
 
 module.exports.getAllSocialLink = {
-  summary: "get all profile social links.",
-  description: "you can use this end point to get all profile social links.",
+  summary: "Get author account profile social links [Author]",
+  description: "you can use this end point to get all author account profile social links.",
   responses: {
     200: {
       description: "",
@@ -112,7 +112,7 @@ module.exports.getAllSocialLink = {
 
 
 module.exports.deleteSocialLink = {
-  summary: "delete social link ",
+  summary: "Delete social link [Author]",
   description: "you can use this end point to delete social link .",
   parameters: [
     {
@@ -129,8 +129,8 @@ module.exports.deleteSocialLink = {
 
 //                      AUTHOR
 module.exports.getAuthorProfiletData = {
-  summary: "get author profile data",
-  description: "you can use this end point to get author profile data",
+  summary: "Get author account profile data [Author]",
+  description: "you can use this end point to get author account profile data",
   parameters: [
     {
       name: "author_id",
@@ -154,8 +154,8 @@ module.exports.getAuthorProfiletData = {
 
 module.exports.getInteractions = {
 
-  summary: "get all interactions .",
-  description: "you can use this end point to get all account.",
+  summary: "Get account interactions.",
+  description: "you can use this end point to get account interactions.",
   responses: {
     200: {
       description: "",

@@ -11,7 +11,7 @@ exports.fileSize = 1024 * 1024 * 85;
 
 exports.notificationConfirmAccountEmail={
 
-  emailSubject:"(CODETOGEEKS) Account Confirmation Email",
-  emailContent :process.env.urlBase+"api/v1/auth/confirmation/"
+  emailSubject:"(CODETOGEEKS) Account email verification",
+  emailContent :process.env.urlBase+"/auth/verification/"
  
 }

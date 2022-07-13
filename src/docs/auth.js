@@ -58,22 +58,21 @@ module.exports.signup = {
     tags: ['Auth']
 }
 
-module.exports.confirmAccount = {
+module.exports.emailVerification = {
 
-  "summary": "confirm new account by code ",
-  "operationId": "confirm account",
-  "description": "you can use this end point to confirm new account by code",
-  "parameters": [],
+  "summary": "verify  account email ",
+  "operationId": "verify account",
+  "description": "you can use this end point to verify account",
+  parameters: [
+    {
+      name: "token",
+      in: "path",
+      required: true,
+      style: "form",
+      schema: { type: "string" },
+    },
+  ],
   "responses": { "200": { "description": "", "headers": {} } },
-  "requestBody": {
-    "required": true,
-    "content": {
-      "application/json": {
-        "schema": { "type": "object"},
-        "example": { "code": "123456" } 
-      }
-    }
-  },
   "tags": ["Auth"]
 
 }
@@ -136,7 +135,7 @@ module.exports.AuthCodeCheck ={
             "content": {
               "application/json": {
                 "schema": { "type": "object"},
-                "example": { "code": "123456" } 
+                "example": { "code": "1234" } 
               }
             }
           },
@@ -159,7 +158,7 @@ module.exports.AuthPasswordReset = {
             "type": "object"
            
           },
-          "example": { "code": "123456", "password": "#Ahmed123" }
+          "example": { "code": "1234", "password": "#Ahmed123" }
         }
       }
     },

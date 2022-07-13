@@ -10,19 +10,19 @@ router.post("/signin", authController.signIn);
 router.post("/signup",authController.signup); 
 
 // update user account password
-router.patch("/password", auth,authController.updatePassword);
+router.patch("/password", auth,authController.changePassword);
 
-// Resend Confirmation Email
-router.post("/resend/confirmation/email",authController.reSendConfirmationEmail); 
+// Resend Ver Email
+router.post("/resend/verification/email",authController.reSendVerificationEmail); 
 
-// Confirm new account endpoint
-router.post("/account/confirm",authController.confirmNewAccount); 
 
 //  Forgot Password
 router.post("/account/recover",authController.recover);
 router.post("/code/check",authController.checkCode);
 router.post("/password/reset",authController.resetPassword);
 
+// account email verification 
+router.post("/verification/:token",authController.emailVerification); 
 //  Oauth
 router.post("/google", authController.googleSignin)
 module.exports = router;

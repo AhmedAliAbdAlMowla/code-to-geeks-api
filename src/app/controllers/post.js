@@ -5,6 +5,7 @@ var slugify = require("slugify");
 const Validator = require("../utils/validator/post");
 const readTime = require("../services/readingTime");
 
+
 /**
  * @desc    Create new post
  * @route   Post /api/v1/post
@@ -13,7 +14,7 @@ const readTime = require("../services/readingTime");
 module.exports.create = async (req, res) => {
   // validation
   const { error } = Validator.Create(req.body);
-  if (error) return res.status(400).json({ message: error.details[0].message });
+  if (error) return res.status(400).json({ message: error.details[0].message.replaceAll('\"','') });
 
   let data = req.body;
   // add estimated reading time to data
@@ -213,6 +214,7 @@ module.exports.update = async (req, res) => {
  * @access  Private
  */
 module.exports.get_all = async (req, res) => {
+  
   // pagination element
   const pageNumber = parseInt(req.query.pageNumber, 10);
   const pageSize = parseInt(req.query.pageSize, 10);
@@ -359,7 +361,7 @@ module.exports.love = async (req, res) => {
   ]);
 
   if (result.rows[0].exists === true)
-    return res.status(400).json({"msessage" : "Post has already been loved."})
+    return res.status(400).json({"message" : "Post has already been loved."})
   
 
   await dbConnection.query(postSqlQuerys.INSERT_POST_LOVE, [
@@ -406,7 +408,7 @@ module.exports.unLove = async (req, res) => {
   ]);
 
   if (isExist.rows[0].exists === true)
-    return res.status(400).json({"msessage" : "Post has already been saved."})
+    return res.status(400).json({"message" : "Post has already been saved."})
   
   let result = await dbConnection.query(
     postSqlQuerys.SAVE_POST,
