@@ -7,9 +7,9 @@ const JWT = require("jsonwebtoken");
 const crypto = require("crypto");
 const Constants = require("../config/constants");
 const Email = require("../services/email");
-const verficationEmailTemplet = require("../utils/assets/templates/verificationEmail");
+const verificationEmailTemplate = require("../utils/assets/templates/verificationEmail");
 const forgetPasswordEmailTemplet = require("../utils/assets/templates/forgetPassword");
-//  Account profile data retrieved successfully
+
 /**
  * @desc    signin account
  * @route   POST /api/v1/auth/signin
@@ -19,7 +19,7 @@ exports.signIn = async (req, res) => {
   const requestData = req.body;
   const { error } = authValidator.signInValidator(requestData);
 
-  if (error) return res.status(400).json({ message: error.details[0].message.replaceAll('\"','') });
+  if (error) return res.status(400).json({ message: error.details[0].message.replace(/\"/g,'') });
 
   let account = await dbConnection.query(authSqlQuery.GET_DATA_FOR_SIGNIN, [
     requestData.email,
@@ -30,7 +30,7 @@ exports.signIn = async (req, res) => {
   if (!account)
     return res.status(400).json({ message: "Invalid email or password." });
 
-  //   check if the account is comfirmed
+  //   check if the account is confirmed
   if (!account.confirmed)
     return res.status(401).json({
       message:
@@ -81,7 +81,7 @@ exports.signup = async (req, res) => {
   const requestData = req.body;
   const { error } = authValidator.signupValidator(requestData);
 
-  if (error) return res.status(400).json({ message: error.details[0].message.replaceAll('\"','') });
+  if (error) return res.status(400).json({ message: error.details[0].message.replace(/\"/g,'') });
 
   const email_exist = await dbConnection.query(
     authSqlQuery.CHECK_EMAIL_IS_EXIST,
@@ -124,7 +124,7 @@ exports.changePassword = async (req, res) => {
     password: requestData.newPassword,
   });
 
-  if (error) return res.status(400).json({ message: "new " + error.details[0].message.replaceAll('\"','') });
+  if (error) return res.status(400).json({ message: "new " + error.details[0].message.replace(/\"/g,'') });
 
   let user = await dbConnection.query(authSqlQuery.GET_ACCOUNT_PASSWORD, [
     req.user._id,
@@ -159,7 +159,7 @@ exports.recover = async (req, res) => {
   const requestData = req.body;
 
   const { error } = authValidator.updateValidator({ email: requestData.email });
-  if (error) return res.status(400).json({ error: error.details[0].message.replaceAll('\"','') });
+  if (error) return res.status(400).json({ error: error.details[0].message.replace(/\"/g,'') });
 
   let email_exist = await dbConnection.query(
     authSqlQuery.CHECK_EMAIL_IS_EXIST,
@@ -205,7 +205,7 @@ exports.checkCode = async (req, res) => {
     code,
   });
 
-  if (error) return res.status(400).json({ message: error.details[0].message.replaceAll('\"','') });
+  if (error) return res.status(400).json({ message: error.details[0].message.replace(/\"/g,'')});
 
   const user = await dbConnection.query(authSqlQuery.CHECH_TOKENT_IS_FIND, [
     code,
@@ -236,7 +236,7 @@ exports.resetPassword = async (req, res) => {
   // validate code and new password
   const { error } = authValidator.resetPasswordAttributeValidator(requestData);
 
-  if (error) return res.status(400).json({ message: error.details[0].message.replaceAll('\"','') });
+  if (error) return res.status(400).json({ message: error.details[0].message.replace(/\"/g,'') });
 
   const user = await dbConnection.query(authSqlQuery.CHECH_TOKENT_IS_FIND, [
     requestData.code,
@@ -276,7 +276,7 @@ module.exports.reSendVerificationEmail = async (req, res) => {
   const { error } = authValidator.updateValidator(requestData);
   if (error)
     return res.status(400).json({
-      message: error.details[0].message.replaceAll('\"',''),
+      message: error.details[0].message.replace(/\"/g,''),
     });
 
   let account = await dbConnection.query(
@@ -312,7 +312,7 @@ module.exports.reSendVerificationEmail = async (req, res) => {
 exports.googleSignin = async (req, res) => {
   const { error } = authValidator.OauthSignupValidator(req.body);
 
-  if (error) return res.status(400).json({ message: error.details[0].message.replaceAll('\"','') });
+  if (error) return res.status(400).json({ message: error.details[0].message.replace(/\"/g,'') });
 
   let googleToken = req.body.token;
   let decodeOfGoogleToken = JWT.decode(googleToken);
@@ -495,7 +495,7 @@ const sendVerificationEmailFunc = async (email) => {
   await Email.sendMail(
     Constants.notificationConfirmAccountEmail.emailSubject,
     "",
-    verficationEmailTemplet(
+    verificationEmailTemplate(
       Constants.notificationConfirmAccountEmail.emailContent + token
     ),
     email

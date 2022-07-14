@@ -14,7 +14,7 @@ const readTime = require("../services/readingTime");
 module.exports.create = async (req, res) => {
   // validation
   const { error } = Validator.Create(req.body);
-  if (error) return res.status(400).json({ message: error.details[0].message.replaceAll('\"','') });
+  if (error) return res.status(400).json({ message: error.details[0].message.replace(/\"/g,'') });
 
   let data = req.body;
   // add estimated reading time to data
