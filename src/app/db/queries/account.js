@@ -4,7 +4,7 @@ exports.queryList = {
     GET_ALL_ACCOUNT: `SELECT * FROM account`,
     GET_ACCOUNT_BY_EMAIL: `SELECT _id, first_name, last_name, email, confirmed FROM account WHERE email = $1`,
     
-  GET_ACCOUNT_DATA: `SELECT  first_name ,last_name  ,email, profile_image_link ,  bio FROM account 
+  GET_ACCOUNT_DATA: `SELECT  first_name ,last_name  ,email, profile_image_link ,  bio,country, city, job_title as jobTitle, created_at as createdAt FROM account 
   WHERE _id =$1`,
   
   UPDATE_ACCOUNT_DATA: (id, table, cols) => {

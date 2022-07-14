@@ -21,6 +21,8 @@ require("./startup/swagger")(app);
 
 require("express-async-errors"); // for error handeler async
 
+// DB Backup
+require("./startup/cronJob")();
 // core
 app.use(cors(corsOptions));
 

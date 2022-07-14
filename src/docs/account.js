@@ -25,6 +25,9 @@ module.exports.updateAccountData = {
         example: {
           firstName: "feloria",
           lastName: "asta",
+          country:  "Egypt",
+          city: "ALEX",
+          jobTitle: "software engineer",
           bio: "plapla",
         },
       },

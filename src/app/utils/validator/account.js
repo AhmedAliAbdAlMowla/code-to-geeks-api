@@ -9,6 +9,9 @@ const Joi = require("joi");
   const schema = Joi.object({
     firstName: Joi.string().max(50).min(2),
     lastName: Joi.string().max(50).min(2),
+    country : Joi.string().max(50).min(2),
+    city: Joi.string().max(50).min(2),
+    jobTitle : Joi.string().max(150).min(2),
     bio : Joi.string().max(1000)
     
   });

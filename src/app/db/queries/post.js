@@ -6,35 +6,35 @@ exports.queryList = {
   SEARCH : `SELECT _id, title FROM post WHERE title ILIKE $1`,
   GET_ALL_POSTS: `
   SELECT 
-  post._id, post.title, post.slug, post.cover_image_link, post.excerpt, post.tags, CONCAT(account.first_name , ' ', account.last_name) as  author_name, account.profile_image_link as author_profile_image, post.love_count , post.count_minutes_read,   post.created_at 
+  post._id, post.title, post.slug, post.cover_image_link, post.excerpt, post.tags, account._id as author_id, CONCAT(account.first_name , ' ', account.last_name) as  author_name,  account.profile_image_link as author_profile_image, post.love_count , post.count_minutes_read,   post.created_at 
   FROM post
   inner JOIN account ON post.author = account._id
   where published = $1
   order by  created_at DESC LIMIT $2 OFFSET $3`,
   GET_ALL_POSTS_WITH_SEARCH: `
   SELECT 
-  post._id, post.title, post.slug, post.cover_image_link, post.excerpt, post.tags, CONCAT(account.first_name , ' ', account.last_name) as  author_name, account.profile_image_link as author_profile_image, post.love_count , post.count_minutes_read,   post.created_at 
+  post._id, post.title, post.slug, post.cover_image_link, post.excerpt, post.tags, account._id as author_id, CONCAT(account.first_name , ' ', account.last_name) as  author_name,  account.profile_image_link as author_profile_image, post.love_count , post.count_minutes_read,   post.created_at 
   FROM post
   inner JOIN account ON post.author = account._id
   where published = $1 AND  title ILIKE $2
   order by  created_at DESC LIMIT $3 OFFSET $4`,
   GET_ONE_POST_BY_ID : `
   SELECT 
-  post._id, post.title, post.slug, post.cover_image_link, post.excerpt, post.tags, post.md,post.published, CONCAT(account.first_name , ' ', account.last_name) as  author_name,
+  post._id, post.title, post.slug, post.cover_image_link, post.excerpt, post.tags, post.md,post.published, account._id as author_id, CONCAT(account.first_name , ' ', account.last_name) as  author_name,  
   account.profile_image_link as author_profile_image, post.tags, post.love_count , post.share_count, post.count_minutes_read,  post.created_at 
   FROM post 
   inner JOIN account ON post.author= account._id
   where post._id = $1`,
   GET_ONE_POST_BY_SLUG : `
   SELECT 
-  post._id, post.title, post.slug, post.cover_image_link ,post.excerpt, post.tags, post.md, CONCAT(account.first_name , ' ', account.last_name) as  author_name,
+  post._id, post.title, post.slug, post.cover_image_link ,post.excerpt, post.tags, post.md, account._id as author_id, CONCAT(account.first_name , ' ', account.last_name) as  author_name,
   account.profile_image_link as author_profile_image, post.tags,  post.love_count , post.share_count, post.count_minutes_read, post.created_at 
   FROM post 
   inner JOIN account ON post.author= account._id
   where post.slug = $1`,
   GET_ALL_POST_BY_TAG_ID : `
   SELECT  
-  post._id, post.title, post.slug, post.cover_image_link,post.excerpt,  CONCAT(account.first_name , ' ', account.last_name) as  author_name, account.profile_image_link as author_profile_image, post.tags, post.created_at 
+  post._id, post.title, post.slug, post.cover_image_link,post.excerpt, account._id as author_id, CONCAT(account.first_name , ' ', account.last_name) as  author_name,  account.profile_image_link as author_profile_image, post.tags, post.created_at 
   from post_tag pt
   inner JOIN post ON post._id =pt.post
   inner JOIN account ON post.author= account._id
@@ -80,14 +80,14 @@ DELETE_POST_LOVE: `DELETE FROM post_love WHERE account =$1 AND post = $2`,
   CHECK_POST_ALREADY_SAVED: `SELECT exists(SELECT 1 post_love FROM saved_post WHERE account_id = $1 AND post_id = $2)`,
   SAVE_POST : `INSERT INTO saved_post(account_id, post_id, created_at) VALUES($1, $2, CURRENT_TIMESTAMP)`,
   GET_ALL_SAVED_POSTS: `
-  SELECT sp._id, post._id as post_id, post.title, post.slug, post.cover_image_link, 
-  post.excerpt, post.tags, CONCAT(account.first_name , ' ', account.last_name) as  author_name,
+  SELECT  post._id as _id, post.title, post.slug, post.cover_image_link, 
+  post.excerpt, post.tags, account._id as author_id, CONCAT(account.first_name , ' ', account.last_name) as  author_name, 
   account.profile_image_link as author_profile_image,
   post.created_at 
   FROM saved_post sp
   inner JOIN post post ON sp.post_id  = post._id
   inner JOIN account ON post.author = account._id
-  where sp.account_id = $1
+  where sp.account_id =  $1
   order by  created_at DESC LIMIT $2 OFFSET $3`,
 
   GET_SAVED_POSTS_COUNT: `SELECT COUNT(*) FROM saved_post`,

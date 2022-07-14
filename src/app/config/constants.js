@@ -2,7 +2,9 @@
 exports.accountTableKey={
   firstName:"first_name",
   lastName:"last_name",
-  phoneNumber:"phone_number",
+  jobTitle:"job_title",
+  country:"country",
+  city: "city",
   bio: "bio"
 }
 exports.smsBody = "";

@@ -76,7 +76,7 @@ module.exports = (code) => {
                       <td style="padding: 0 35px">
                         <div style="border-bottom: 1px solid #eee">
                           <a
-                            href="https://codetogeeks.com"
+                            href="https://www.codetogeeks.com"
                             style="
                               font-size: 1.4em;
                               color: #205375;
