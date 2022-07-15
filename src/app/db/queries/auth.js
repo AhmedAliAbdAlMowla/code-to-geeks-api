@@ -10,12 +10,12 @@ module.exports.queryList = {
  
   CHECK_EMAIL_IS_EXIST: ` select exists(select 1 from account where email = $1)`,
 
-  GET_DATA_FOR_SIGNIN: `SELECT _id, first_name, last_name, email,role, password, confirmed, type ,profile_image_link, country, city, job_title as jobTitle, bio,  created_at FROM account WHERE email = $1`,
+  GET_DATA_FOR_SIGNIN: `SELECT _id, first_name, last_name, email,role, password, confirmed, type ,profile_image_link, country, city, job_title , bio,  created_at FROM account WHERE email = $1`,
  
 
   CHECK_IF_ACCOUNT_ALREADY_VERIFIED: `select exists(select 1 from account where email = $1 AND confirmed = true)`,
   CONFIRM_ACCOUNT_BY_EMAIL: `UPDATE account SET confirmed = true WHERE email =$1 RETURNING  _id, 
-  first_name, last_name,email, role,profile_image_link,country, city, job_title as jobTitle, bio,created_at`,
+  first_name, last_name,email, role,profile_image_link,country, city, job_title , bio,created_at`,
   GET_ACCOUNT_PASSWORD: `SELECT password FROM account WHERE _id= $1`,
   UPDATE_ACCOUNT_PASSWORD: `UPDATE account SET password = $1  WHERE _id=$2`,
   

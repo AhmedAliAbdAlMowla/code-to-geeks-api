@@ -12,14 +12,26 @@ const {
  * @access  Private
  */
 module.exports.getAccountData = async (req, res) => {
-  const accountData = await dbConnection.query(
+  let accountData = await dbConnection.query(
     accountSqlQuery.GET_ACCOUNT_DATA,
     [req.user._id]
   );
-
+  accountData =  accountData.rows[0];
   res.status(200).json({
     payload: {
-      accountData: accountData.rows[0],
+     
+
+      _id: accountData._id,
+      firstName: accountData.first_name,
+      lastName: accountData.last_name,
+      email: accountData.email,
+      profileImageLink: accountData.profile_image_link,
+      country: accountData.country,
+      city:accountData.city,
+      jobTitle :accountData.job_title,
+      bio: accountData.bio,
+      createdAt : accountData.created_at,
+   
     },
     message: "Account profile data retrieved successfully.",
   });
@@ -33,7 +45,7 @@ module.exports.getAccountData = async (req, res) => {
 module.exports.updateAccount = async (req, res) => {
   // validateProduct body
   const { error } = updateValidator(req.body);
-  if (error) return res.status(400).json({ message: error.details[0].message });
+  if (error) return res.status(400).json({ message: error.details[0].message.replace(/\"/g,'')  });
 
   // update
   let updateColumn = {};
@@ -135,7 +147,7 @@ module.exports.createSocialLink = async (req, res) => {
   // validation
   const { error } = createSocialLink(data);
 
-  if (error) return res.status(400).json({ message: error.details[0].message });
+  if (error) return res.status(400).json({ message: error.details[0].message.replace(/\"/g,'')  });
 
   let result = await dbConnection.query(accountSqlQuery.INSERT_SOCIAL_LINK, [
     req.user._id,
