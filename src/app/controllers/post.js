@@ -214,7 +214,7 @@ module.exports.update = async (req, res) => {
  * @access  Private
  */
 module.exports.get_all = async (req, res) => {
-  
+ 
   // pagination element
   const pageNumber = parseInt(req.query.pageNumber, 10);
   const pageSize = parseInt(req.query.pageSize, 10);

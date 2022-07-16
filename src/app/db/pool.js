@@ -11,7 +11,7 @@ const db_config = {
 };
 
 const pool = new Pool(db_config);
-
+/*
 pool.on("connect", (client) => {
   console.log("Connected to Postgresql..");
 });
@@ -19,8 +19,9 @@ pool.on("connect", (client) => {
 pool.on("remove", (client) => {
   console.log("DB connection remove ..");
 });
+*/
 pool.on("error", (err, client) => {
-  console.log("DB connection remove ..", err);
+  console.log("DB connection error ..", err);
 });
 
 module.exports = pool;

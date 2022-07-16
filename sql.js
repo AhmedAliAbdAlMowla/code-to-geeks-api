@@ -3,6 +3,7 @@ module.exports = async () => {
     `CREATE EXTENSION IF NOT EXISTS "uuid-ossp"`,
     `CREATE TYPE roleEnum AS ENUM ('user', 'author','admin')`,
     `CREATE TYPE accountTypeEnum AS ENUM ('registred', 'google',  'facebook', 'linkedin')`
+    `CREATE TYPE logEnum AS ENUM ('error', 'warning','info','other')`,
 
     `    CREATE TABLE tag(
         _id uuid DEFAULT uuid_generate_v4 (),
@@ -33,9 +34,12 @@ module.exports = async () => {
 	  		role roleEnum NOT NULL,
 	  		profile_image_link VARCHAR(400),
 			profile_image_s3_key VARCHAR(100),
+            country VARCHAR(50),
+            city VARCHAR(50),
+            job_title VARCHAR(150),
             bio VARCHAR(1000),
             confirmed boolean DEFAULT false,
-            reset_password_token  VARCHAR(6),
+            reset_password_code  VARCHAR(4),
             reset_password_expires TIMESTAMP,
             created_at TIMESTAMP,
             PRIMARY KEY (_id)
@@ -87,11 +91,10 @@ module.exports = async () => {
             )`,
 
     `   CREATE TABLE saved_post(
-        _id uuid DEFAULT uuid_generate_v4 (),
 	    post_id uuid REFERENCES post(_id),
         account_id uuid REFERENCES account(_id),
         created_at TIMESTAMP NOT NULL,
-        PRIMARY KEY (_id)
+        PRIMARY KEY (post_id, account_id)
         ),
         CREATE TABLE post_love(
             _id uuid DEFAULT uuid_generate_v4(),
@@ -101,6 +104,14 @@ module.exports = async () => {
             )
             
 		`,
+        `CREATE TABLE log(
+            _id uuid DEFAULT uuid_generate_v4 (),
+            path VARCHAR(300),
+            log_type logEnum NOT NULL,
+            description VARCHAR(1000) ,
+            created_at TIMESTAMP NOT NULL,
+            PRIMARY KEY (_id)
+        )`,
         `
         ALTER TABLE post_love
        ADD UNIQUE (account, post)`,
