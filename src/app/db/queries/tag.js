@@ -7,7 +7,7 @@ exports.queryList = {
   CREATE_NEW_TAG : `INSERT INTO tag(name, description, color, created_at) VALUES($1, $2, $3, CURRENT_TIMESTAMP)`,
   GET_ALL_TAG: `
   SELECT 
-  _id, name, color, created_at
+  _id, name, description, color, created_at
   FROM tag
   order by  created_at DESC LIMIT $1 OFFSET $2`,
   GET_TAG_COUNT: `SELECT COUNT(*) FROM tag`,

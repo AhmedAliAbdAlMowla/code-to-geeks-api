@@ -1,5 +1,4 @@
 "use strict";
-const authValidator = require("../utils/validator/auth");
 const dbConnection = require("../db/connection");
 const authSqlQuery = require("../db/queries/auth").queryList;
 const bcrypt = require("bcrypt");
@@ -17,10 +16,7 @@ const forgetPasswordEmailTemplet = require("../utils/assets/templates/forgetPass
  */
 exports.signIn = async (req, res) => {
   const requestData = req.body;
-  const { error } = authValidator.signInValidator(requestData);
-
-  if (error) return res.status(400).json({ message: error.details[0].message.replace(/\"/g,'') });
-
+  
   let account = await dbConnection.query(authSqlQuery.GET_DATA_FOR_SIGNIN, [
     requestData.email,
   ]);
@@ -51,7 +47,7 @@ exports.signIn = async (req, res) => {
       name: account.first_name + " " + account.last_name,
       role: account.role,
     },
-    process.env.JWT_PRIVIAT_KEY,
+    process.env.JWT_PRIVATE_KEY,
     {
       expiresIn: "24h",
     }
@@ -84,9 +80,6 @@ exports.signIn = async (req, res) => {
 exports.signup = async (req, res) => {
 
   const requestData = req.body;
-  const { error } = authValidator.signupValidator(requestData);
-
-  if (error) return res.status(400).json({ message: error.details[0].message.replace(/\"/g,'') });
 
   const email_exist = await dbConnection.query(
     authSqlQuery.CHECK_EMAIL_IS_EXIST,
@@ -124,13 +117,7 @@ exports.signup = async (req, res) => {
 exports.changePassword = async (req, res) => {
 
   const requestData = req.body;
-  // validate newPassword
-  const { error } = authValidator.updateValidator({
-    password: requestData.newPassword,
-  });
-
-  if (error) return res.status(400).json({ message: "new " + error.details[0].message.replace(/\"/g,'') });
-
+ 
   let user = await dbConnection.query(authSqlQuery.GET_ACCOUNT_PASSWORD, [
     req.user._id,
   ]);
@@ -163,9 +150,6 @@ exports.changePassword = async (req, res) => {
 exports.recover = async (req, res) => {
   const requestData = req.body;
 
-  const { error } = authValidator.updateValidator({ email: requestData.email });
-  if (error) return res.status(400).json({ error: error.details[0].message.replace(/\"/g,'') });
-
   let email_exist = await dbConnection.query(
     authSqlQuery.CHECK_EMAIL_IS_EXIST,
     [requestData.email]
@@ -191,7 +175,7 @@ exports.recover = async (req, res) => {
 
   //  Send mail
 
-  const emailSubject = "(CODETOGEEKS) Forget password code";
+  const emailSubject = "Forget password code";
 
     await Email.sendMail(emailSubject, "", forgetPasswordEmailTemplet(resetPasswordCode), requestData.email);
 
@@ -205,13 +189,7 @@ exports.recover = async (req, res) => {
  */
 exports.checkCode = async (req, res) => {
   const code = req.body.code;
-  // validate code
-  const { error } = authValidator.verificationCodeValidator({
-    code,
-  });
-
-  if (error) return res.status(400).json({ message: error.details[0].message.replace(/\"/g,'')});
-
+ 
   const user = await dbConnection.query(authSqlQuery.CHECH_TOKENT_IS_FIND, [
     code,
   ]);
@@ -237,11 +215,6 @@ exports.checkCode = async (req, res) => {
  */
 exports.resetPassword = async (req, res) => {
   const requestData = req.body;
-
-  // validate code and new password
-  const { error } = authValidator.resetPasswordAttributeValidator(requestData);
-
-  if (error) return res.status(400).json({ message: error.details[0].message.replace(/\"/g,'') });
 
   const user = await dbConnection.query(authSqlQuery.CHECH_TOKENT_IS_FIND, [
     requestData.code,
@@ -278,16 +251,12 @@ exports.resetPassword = async (req, res) => {
 module.exports.reSendVerificationEmail = async (req, res) => {
 
   const requestData = req.body;
-  const { error } = authValidator.updateValidator(requestData);
-  if (error)
-    return res.status(400).json({
-      message: error.details[0].message.replace(/\"/g,''),
-    });
 
   let account = await dbConnection.query(
     authSqlQuery.GET_ACCOUNT_DATA_BY_EMAIL_FOR_RESEND_CONFIRM_EMAIL,
     [req.body.email]
   );
+
 
   account = account.rows[0];
   if (!account)
@@ -315,9 +284,6 @@ module.exports.reSendVerificationEmail = async (req, res) => {
  * @access  Public
  */
 exports.googleSignin = async (req, res) => {
-  const { error } = authValidator.OauthSignupValidator(req.body);
-
-  if (error) return res.status(400).json({ message: error.details[0].message.replace(/\"/g,'') });
 
   let googleToken = req.body.token;
   let decodeOfGoogleToken = JWT.decode(googleToken);
@@ -347,7 +313,7 @@ exports.googleSignin = async (req, res) => {
     if (account.type === "registred") {
       return res.status(400).json({
         message:
-          "This email have registred account , please try login with this email and password !",
+          "This email have registered account , please try login with this email and password !",
       });
     } else {
       const newAuthToken = await JWT.sign(
@@ -356,7 +322,7 @@ exports.googleSignin = async (req, res) => {
           name: account.first_name + " " + account.last_name,
           role: account.role,
         },
-        process.env.JWT_PRIVIAT_KEY,
+        process.env.JWT_PRIVATE_KEY,
         {
           expiresIn: "1d",
         }
@@ -371,7 +337,7 @@ exports.googleSignin = async (req, res) => {
           bio: account.bio,
           token: newAuthToken,
         },
-        message: "succes Auth",
+        message: "success Auth",
       });
     }
   } else {
@@ -399,7 +365,7 @@ exports.googleSignin = async (req, res) => {
           decodeOfGoogleToken.family_name,
         role: "user",
       },
-      process.env.JWT_PRIVIAT_KEY,
+      process.env.JWT_PRIVATE_KEY,
       {
         expiresIn: "1d",
       }
@@ -414,7 +380,7 @@ exports.googleSignin = async (req, res) => {
         bio: null,
         token: newAuthToken,
       },
-      message: "succes Auth",
+      message: "success Auth",
     });
   }
 };
@@ -459,7 +425,7 @@ module.exports.emailVerification = async (req, res) => {
       name: accountData.first_name + " " + accountData.last_name,
       role: accountData.role,
     },
-    process.env.JWT_PRIVIAT_KEY,
+    process.env.JWT_PRIVATE_KEY,
     {
       expiresIn: "24h",
     }

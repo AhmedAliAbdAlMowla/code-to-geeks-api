@@ -1,7 +1,6 @@
 const s3Service = require("../services/s3");
 const dbConnection = require("../db/connection");
 const fileSqlQuery = require("../db/queries/file").queryList;
-const validator = require("../utils/validator/file");
 
  /**
  * @desc    Upload file 
@@ -84,10 +83,6 @@ module.exports.get_one = async (req, res) => {
  * @access  Private [author, admin]
  */
  module.exports.update = async (req, res) => {
- 
-    // validateProduct body
-    const { error } = validator.Update(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
  
     // update
    const result = await dbConnection.query(

@@ -2,7 +2,6 @@ const s3Service = require("../services/s3");
 const postSqlQuerys = require("../db/queries/post").queryList;
 const dbConnection = require("../db/connection");
 var slugify = require("slugify");
-const Validator = require("../utils/validator/post");
 const readTime = require("../services/readingTime");
 
 
@@ -12,9 +11,6 @@ const readTime = require("../services/readingTime");
  * @access  Private
  */
 module.exports.create = async (req, res) => {
-  // validation
-  const { error } = Validator.Create(req.body);
-  if (error) return res.status(400).json({ message: error.details[0].message.replace(/\"/g,'') });
 
   let data = req.body;
   // add estimated reading time to data
@@ -75,11 +71,6 @@ module.exports.create = async (req, res) => {
  * @access  Private [ admin - author ]
  */
 exports.uploadCoverImage = async (req, res) => {
-  if (!req.file)
-    return res
-      .status(400)
-      .json({ message: "You shoud send file in form-data." });
-
   // get old image  S3Key if image exist
   const postCoverImageS3Key = await dbConnection.query(
     postSqlQuerys.GET_POST_COVER_IMAGE_S3_KEY,
@@ -154,10 +145,6 @@ exports.resetCoverImage = async (req, res) => {
  * @access  Private
  */
 module.exports.update = async (req, res) => {
-  // validateProduct body
-  const { error } = Validator.Update(req.body);
-  if (error) return res.status(400).json({ message: error.details[0].message });
-
   // add estimated reading time to data
   req.body.count_minutes_read = await readTime(req.body.md);
   // if update slug make slugify
@@ -194,12 +181,10 @@ module.exports.update = async (req, res) => {
       ]);
     }
   }
-
   const result = await dbConnection.query(
     postSqlQuerys.UPDATE_POST_DATA(req.params.id, "post", updateCol),
     updateDate
   );
-
   if (result.rowCount == 0)
     return res
       .status(400)
@@ -327,15 +312,29 @@ module.exports.get_all_by_tag_id = async (req, res) => {
 module.exports.delete = async (req, res) => {
   let result;
   try {
+
     await dbConnection.query("BEGIN");
+
     await dbConnection.query(postSqlQuerys.DELETE_POST_TAG_REL_BY_POST_ID, [
       req.params.id,
     ]);
 
+    // remove post from love list for all user
+    await dbConnection.query(postSqlQuerys.DELETE_POST_LOVE_FROM_ALL, [
+      req.params.id,
+    ]);
+    // remove post from save list for all user
+    await dbConnection.query(postSqlQuerys.UN_SAVE_POST_FROM_ALL_USER, [
+      req.params.id,
+    ]);
+
+
     result = await dbConnection.query(postSqlQuerys.DELETE_POST_BY_ID, [
       req.params.id,
     ]);
+
     await dbConnection.query("COMMIT");
+
   } catch (err) {
     console.log(err.message);
     await dbConnection.query("ROLLBACK");

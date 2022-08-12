@@ -4,25 +4,36 @@ const Joi = require("joi");
  * @desc     Validate Create tag
  * @returns  Result after validate tag
  */
-module.exports.Create = (tag) => {
+ module.exports.createValidator = (req, res, next) => {
   const schema = Joi.object({
-    name:Joi.string().max(60).min(2).required(),
-    description: Joi.string().required().max(500),
-    color: Joi.string().max(10).min(2).required(),
+    name:Joi.string().max(60).min(2).trim().required(),
+    description: Joi.string().required().trim().max(500),
+    color: Joi.string().max(10).min(2).trim().required(),
   
   });
 
-  return schema.validate(tag);
+  const result = schema.validate(req.body);
+  if (result.error)
+    return res
+      .status(400)
+      .json({ message: result.error.details[0].message.replace(/\"/g, "") });
+  req.body = result.value;
+  next();
 };
 
 
-module.exports.Update = (tag) => {
+module.exports.updateValidator = (req, res, next) => {
   const schema = Joi.object({
-    name:Joi.string().max(60).min(2),
-    description: Joi.string(),
-    color: Joi.string().max(10).min(2),
+    name:Joi.string().max(60).min(2).trim(),
+    description: Joi.string().trim().max(500),
+    color: Joi.string().max(10).min(2).trim(),
   
   });
-
-  return schema.validate(tag);
+  const result = schema.validate(req.body);
+  if (result.error)
+    return res
+      .status(400)
+      .json({ message: result.error.details[0].message.replace(/\"/g, "") });
+  req.body = result.value;
+  next();
 };

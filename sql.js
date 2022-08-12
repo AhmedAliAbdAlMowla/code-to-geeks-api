@@ -65,6 +65,7 @@ module.exports = async () => {
                 count_minutes_read integer,
                 published boolean DEFAULT false,
                 created_at TIMESTAMP NOT NULL,
+                updated_date DATE DEFAULT NULL,
                 PRIMARY KEY (_id)
                 )
             `,
@@ -97,10 +98,9 @@ module.exports = async () => {
         PRIMARY KEY (post_id, account_id)
         ),
         CREATE TABLE post_love(
-            _id uuid DEFAULT uuid_generate_v4(),
             account uuid REFERENCES account(_id),
               post uuid  REFERENCES post(_id),
-            PRIMARY KEY (_id)
+            PRIMARY KEY (account,post)
             )
             
 		`,

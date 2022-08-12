@@ -2,10 +2,7 @@ const s3Service = require("../services/s3");
 const accountTableKey = require("../config/constants").accountTableKey;
 const dbConnection = require("../db/connection");
 const accountSqlQuery = require("../db/queries/account").queryList;
-const {
-  updateValidator,
-  createSocialLink,
-} = require("../utils/validator/account");
+
 /*
  * @desc    Get account profile data
  * @route   GET /api/v1/account/
@@ -43,10 +40,7 @@ module.exports.getAccountData = async (req, res) => {
  * @access  Private
  */
 module.exports.updateAccount = async (req, res) => {
-  // validateProduct body
-  const { error } = updateValidator(req.body);
-  if (error) return res.status(400).json({ message: error.details[0].message.replace(/\"/g,'')  });
-
+ 
   // update
   let updateColumn = {};
   let updateDate = [];
@@ -75,11 +69,6 @@ module.exports.updateAccount = async (req, res) => {
  * @access  Private
  */
 module.exports.uploadProfileImage = async (req, res) => {
-  if (!req.file)
-    return res
-      .status(400)
-      .json({ message: "You shoud send file in form-data." });
-
   // get old image  S3Key if image exist
   const profileImageS3Key = await dbConnection.query(
     accountSqlQuery.GET_ACCOUNT_PROFILE_IMAGE_S3_KEY,
@@ -144,11 +133,6 @@ module.exports.getProfileImage = async (req, res) => {
 
 module.exports.createSocialLink = async (req, res) => {
   const data = req.body;
-  // validation
-  const { error } = createSocialLink(data);
-
-  if (error) return res.status(400).json({ message: error.details[0].message.replace(/\"/g,'')  });
-
   let result = await dbConnection.query(accountSqlQuery.INSERT_SOCIAL_LINK, [
     req.user._id,
     data.name,

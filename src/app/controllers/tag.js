@@ -1,5 +1,4 @@
 const tagSqlQuerys = require("../db/queries/tag").queryList;
-const Validator = require("../utils/validator/tag");
 const dbConnection = require("../db/connection");
 /**
  * @desc    Create new tag
@@ -7,11 +6,6 @@ const dbConnection = require("../db/connection");
  * @access  Private
  */
 module.exports.create = async (req, res) => {
-  // validation
-  const { error } = Validator.Create(req.body);
-  if (error)
-    return res.status(400).json({ message: error.details[0].message });
-
     const data = req.body;
     
     let result = await dbConnection.query(tagSqlQuerys.CREATE_NEW_TAG, [
@@ -33,10 +27,6 @@ module.exports.create = async (req, res) => {
  * @access  Private
  */
  module.exports.update = async (req, res) => {
- 
-    // validateProduct body
-    const { error } = Validator.Update(req.body);
-    if (error) return res.status(400).json({ message: error.details[0].message });
  
     // update
     let updateCol = {};

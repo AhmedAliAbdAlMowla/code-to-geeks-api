@@ -48,7 +48,7 @@ exports.queryList = {
   CHECK_IF_POST_TAG_EXIST : `select exists(select 1 from post_tag where post = $1 AND tag = $2)`,
   GET_ALL_POST_TAG_BY_POST_ID: `select _id,tag from post_tag where post = $1 `,
   DELETE_POST_TAG: `DELETE FROM post_tag WHERE _id = $1`,
-  CREATE_NEW_POST: `INSERT INTO post(title, slug, excerpt, md, author, tags, count_minutes_read, created_at) VALUES($1, $2, $3, $4, $5, $6,$7, CURRENT_TIMESTAMP) RETURNING _id`,
+  CREATE_NEW_POST: `INSERT INTO post(title, slug, excerpt, md, author, tags, count_minutes_read, created_at, updated_date ) VALUES($1, $2, $3, $4, $5, $6,$7, CURRENT_TIMESTAMP, CURRENT_DATE) RETURNING _id`,
   CREATE_POST_TAG_REL: `INSERT INTO post_tag(post, tag) VALUES($1,$2)`,
   UPDATE_POST_DATA: (id, table, cols) => {
     let query = ["UPDATE " + table];
@@ -58,6 +58,8 @@ exports.queryList = {
       set.push(key + " = ($" + (i + 1) + ")");
     });
     query.push(set.join(", "));
+    query.push(',updated_date = CURRENT_DATE') ;// add update date 
+
     query.push("WHERE _id = " + `'${id}'`);
     return query.join(" ");
   },
@@ -74,6 +76,7 @@ INCREMENT_LOVE_COUNT : `UPDATE post SET love_count = love_count + 1 WHERE _id = 
 DESCREMENT_LOVE_COUNT : `UPDATE post SET love_count = love_count - 1 WHERE _id = $1`,
 INSERT_POST_LOVE: `INSERT INTO post_love(account, post) VALUES($1, $2)`,
 DELETE_POST_LOVE: `DELETE FROM post_love WHERE account =$1 AND post = $2`,
+DELETE_POST_LOVE_FROM_ALL: `DELETE FROM post_love WHERE   post = $1`,
 
 
   //                                             SAVED POST
@@ -93,5 +96,6 @@ DELETE_POST_LOVE: `DELETE FROM post_love WHERE account =$1 AND post = $2`,
   GET_SAVED_POSTS_COUNT: `SELECT COUNT(*) FROM saved_post`,
   
   UN_SAVE_POST : `DELETE from saved_post WHERE account_id = $1 AND post_id =$2`,
+  UN_SAVE_POST_FROM_ALL_USER : `DELETE from saved_post WHERE post_id =$1`,
   
 };

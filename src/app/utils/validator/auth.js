@@ -1,3 +1,7 @@
+
+
+
+
 "use strict"
 const Joi = require("joi");
 
@@ -5,16 +9,17 @@ const Joi = require("joi");
  * @desc     Validate signup
  * @returns  Result after validate user
  */
-module.exports.signupValidator = (user) => {
+module.exports.signupValidator = (req, res, next) => {
   const schema = Joi.object({
 
-    firstName: Joi.string().max(50).min(2).required(),
-    lastName: Joi.string().max(50).min(2).required(),
-    email: Joi.string().max(50).min(6).email().required(),
+    firstName: Joi.string().max(50).min(2).trim().required(),
+    lastName: Joi.string().max(50).min(2).trim().required(),
+    email: Joi.string().max(50).min(6).trim().email().required(),
 
     password: Joi.string()
     .max(20)
     .min(8)
+    .trim()
     .required()
     .regex(/^(?=.*?[a-z])(?=.*?[0-9]).{8,}$/)
     .label("password")
@@ -26,31 +31,44 @@ module.exports.signupValidator = (user) => {
 
   });
 
-  return schema.validate(user);
+  const result = schema.validate(req.body);
+  if (result.error)
+    return res
+      .status(400)
+      .json({ message: result.error.details[0].message.replace(/\"/g, "") });
+  req.body = result.value;
+  next();
 };
 
 /**
  * @desc     Validate signin
  * @returns  Result after validate user
  */
-module.exports.signInValidator = (user) => {
+module.exports.signInValidator = (req, res, next) => {
   const schema = Joi.object({
-    email: Joi.string().max(50).min(6).email().required(),
-    password: Joi.string().max(20).required(),
+    email: Joi.string().max(50).min(6).email().trim().required(),
+    password: Joi.string().max(20).trim().required(),
   });
-  return schema.validate(user);
+  const result = schema.validate(req.body);
+  if (result.error)
+    return res
+      .status(400)
+      .json({ message: result.error.details[0].message.replace(/\"/g, "") });
+  req.body = result.value;
+  next();
 };
 
 /**
  * @desc     Validate updates in user document
  * @returns  Result after validate new data
  */
-module.exports.updateValidator = (user) => {
+module.exports.updateValidator = (req, res, next) => {
   const schema = Joi.object({
-    firstName: Joi.string().max(50).min(2),
-    lastName: Joi.string().max(50).min(2),
-    email: Joi.string().max(50).min(6).email(),
+    firstName: Joi.string().max(50).min(2).trim(),
+    lastName: Joi.string().max(50).min(2).trim(),
+    email: Joi.string().max(50).min(6).email().trim(),
     password: Joi.string()
+    .trim()
     .max(20)
     .min(8)
     .regex(/^(?=.*?[a-z])(?=.*?[0-9]).{8,}$/)
@@ -64,16 +82,23 @@ module.exports.updateValidator = (user) => {
     
   });
 
-  return schema.validate(user);
+  const result = schema.validate(req.body);
+  if (result.error)
+    return res
+      .status(400)
+      .json({ message: result.error.details[0].message.replace(/\"/g, "") });
+  req.body = result.value;
+  next();
 };
 
 /**
  * @desc     Validate confirmation code 
  * @returns  Result after validate code
  */
-module.exports.verificationCodeValidator = (code) => {
+module.exports.verificationCodeValidator = (req, res, next) => {
   const schema = Joi.object({
     code: Joi.string()
+    .trim()
     .required()
     .regex(/^[0-9]+$/)
     .length(4)
@@ -85,17 +110,24 @@ module.exports.verificationCodeValidator = (code) => {
     }),
   });
 
-  return schema.validate(code);
+  const result = schema.validate(req.body);
+  if (result.error)
+    return res
+      .status(400)
+      .json({ message: result.error.details[0].message.replace(/\"/g, "") });
+  req.body = result.value;
+  next();
 };
 
 /**
  * @desc     Validate reset password attribute [code , password] 
  * @returns  Result after validate  [code , password] 
  */
- module.exports.resetPasswordAttributeValidator = (attr) => {
+ module.exports.resetPasswordValidator = (req, res, next) => {
   const schema = Joi.object({
-    code: Joi.string().max(4).min(4).required(),
+    code: Joi.string().length(4).trim().required(),
     password: Joi.string()
+    .trim()
     .max(20)
     .min(8)
     .required()
@@ -108,7 +140,13 @@ module.exports.verificationCodeValidator = (code) => {
     }),
   });
 
-  return schema.validate(attr);
+  const result = schema.validate(req.body);
+  if (result.error)
+    return res
+      .status(400)
+      .json({ message: result.error.details[0].message.replace(/\"/g, "") });
+  req.body = result.value;
+  next();
 };
  //         Oauth
 
@@ -117,11 +155,17 @@ module.exports.verificationCodeValidator = (code) => {
  * @desc     Validate  Oauth signin
  * @returns  Result after validate user token
  */
-module.exports.OauthSignupValidator = (user) => {
+module.exports.OauthSignupValidator = (req, res, next) => {
   const schema = Joi.object({
 
-    token : Joi.string().min(10).required(),
+    token : Joi.string().min(10).trim().required()
   });
 
-  return schema.validate(user);
+  const result = schema.validate(req.body);
+  if (result.error)
+    return res
+      .status(400)
+      .json({ message: result.error.details[0].message.replace(/\"/g, "") });
+  req.body = result.value;
+  next();
 };

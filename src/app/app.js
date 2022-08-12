@@ -26,7 +26,6 @@ require("./startup/cronJob")();
 // core
 app.use(cors(corsOptions));
 
-
 // Routes
 require("./startup/routes")(app);
 

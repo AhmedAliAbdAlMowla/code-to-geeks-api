@@ -6,6 +6,7 @@ const tag = require("./tag");
 const message = require("./message");
 const about = require("./aboutAs");
 const file = require("./file");
+const system = require("./system")
 module.exports = {
   openapi: "3.0.0",
   servers: [
@@ -65,6 +66,10 @@ module.exports = {
     {
       name: "File",
       description: "Everything about files.",
+    },
+    {
+      name: "System",
+      description: "Everything about system.",
     }
     /*
        {
@@ -224,7 +229,15 @@ module.exports = {
       patch : file.update,
       delete : file.deleteFile
     },
-  
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    "/sys/log" :{
+      get : system.getLogs
+      
+    },
+    "/sys/post/updated" :{
+      get : system.getUpdatedPosts
+    },
     
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
