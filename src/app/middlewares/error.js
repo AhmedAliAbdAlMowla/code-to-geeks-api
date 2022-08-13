@@ -5,7 +5,7 @@ const {log} = require("../services/logger")
  */
 module.exports = async(err, req, res, next) => {
 
-const logPath = req.method +"  -> "+req.protocol+"://"+req.get('host')+req.originalUrl;
+const logPath = `${req.method}  -> ${req.originalUrl}`;
 await log(0, logPath,  err.message);
 
   if (err.type === "database") 

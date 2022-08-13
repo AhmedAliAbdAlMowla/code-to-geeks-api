@@ -8,5 +8,5 @@ const systemController = require("../controllers/system");
 // get all logs
 router.get("/log",  systemController.getAllLogs);
 //                         posts 
-router.get("/post/updated",systemController.getUpdatedPost)
+router.get("/post/slugs",systemController.getPostsSlugs)
 module.exports = router;

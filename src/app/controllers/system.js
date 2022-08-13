@@ -31,11 +31,11 @@ module.exports.getAllLogs = async (req, res) => {
 };
 
 /**
- * @desc    Get all updated posts (slugs)
- * @route   GET /api/v1/sys/post/updated
+ * @desc    Get all posts (slugs)
+ * @route   GET /api/v1/sys/post/slugs
  * @access  public
  */
-module.exports.getUpdatedPost = async (req, res) => {
+module.exports.getPostsSlugs = async (req, res) => {
   let posts = await dbConnection.query(systemSqlQuery.GET_UPDATED_POSTS, []);
 
   posts = posts.rows;

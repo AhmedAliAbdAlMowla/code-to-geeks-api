@@ -235,8 +235,8 @@ module.exports = {
       get : system.getLogs
       
     },
-    "/sys/post/updated" :{
-      get : system.getUpdatedPosts
+    "/sys/post/slugs" :{
+      get : system.getPostsSlugs
     },
     
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

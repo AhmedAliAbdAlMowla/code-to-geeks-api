@@ -23,9 +23,9 @@ module.exports.getLogs = {
   };
   
 
-  module.exports.getUpdatedPosts = {
-    summary: "get updated Posts",
-    description: "you can use this end point to get updated posts slugs.",
+  module.exports.getPostsSlugs = {
+    summary: "get Posts slugs",
+    description: "you can use this end point to get posts slugs.",
    
     responses: { 200: { description: "", headers: {} } },
     tags: ["System"],
