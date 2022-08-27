@@ -16,9 +16,13 @@ require("./config/config")();
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
 
+// rate limiter
+app.use(require("./middlewares/rateLimiter"));
 // swagger
 require("./startup/swagger")(app);
 
+// Redis connection 
+require("./startup/redis").connection();
 require("express-async-errors"); // for error handeler async
 
 // DB Backup

@@ -38,7 +38,7 @@ exports.queryList = {
   from post_tag pt
   inner JOIN post ON post._id =pt.post
   inner JOIN account ON post.author= account._id
-  where pt.tag = $1
+  where pt.tag = $1 and published = true
   order by  created_at DESC LIMIT $2 OFFSET $3
   `,
   GET_POSTS_COUNT: `SELECT COUNT(*) FROM post where published = $1`,

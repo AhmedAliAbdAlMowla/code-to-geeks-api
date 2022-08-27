@@ -1,3 +1,4 @@
+
 module.exports = (app) => {
     // Routes
     app.use("/api/v1/auth", require("../routes/auth"));

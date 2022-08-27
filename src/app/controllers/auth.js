@@ -49,7 +49,7 @@ exports.signIn = async (req, res) => {
     },
     process.env.JWT_PRIVATE_KEY,
     {
-      expiresIn: "24h",
+      expiresIn:  account.role === "admin"? "1d":"30d",
     }
   );
 
@@ -324,7 +324,7 @@ exports.googleSignin = async (req, res) => {
         },
         process.env.JWT_PRIVATE_KEY,
         {
-          expiresIn: "1d",
+          expiresIn:  (account.role === "admin")? "1d":"30d",
         }
       );
       return res.status(200).json({
@@ -367,7 +367,7 @@ exports.googleSignin = async (req, res) => {
       },
       process.env.JWT_PRIVATE_KEY,
       {
-        expiresIn: "1d",
+        expiresIn: "30d",
       }
     );
     return res.status(200).json({
@@ -427,7 +427,7 @@ module.exports.emailVerification = async (req, res) => {
     },
     process.env.JWT_PRIVATE_KEY,
     {
-      expiresIn: "24h",
+      expiresIn:  accountData.role === "admin"? "1d":"30d",
     }
   );
 
@@ -464,7 +464,7 @@ const sendVerificationEmailFunc = async (email) => {
     },
     process.env.JWT_EMAIL_SECRET,
     {
-      expiresIn: "24h", // 24 hours
+      expiresIn: "2h", // 24 hours
     }
   );
   //  Send mail

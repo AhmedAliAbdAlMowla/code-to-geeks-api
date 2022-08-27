@@ -3,7 +3,7 @@ const postSqlQuerys = require("../db/queries/post").queryList;
 const dbConnection = require("../db/connection");
 var slugify = require("slugify");
 const readTime = require("../services/readingTime");
-
+const rediConnection = require("../startup/redis");
 
 /**
  * @desc    Create new post
@@ -11,7 +11,6 @@ const readTime = require("../services/readingTime");
  * @access  Private
  */
 module.exports.create = async (req, res) => {
-
   let data = req.body;
   // add estimated reading time to data
   data.readTime = await readTime(data.md);
@@ -199,7 +198,8 @@ module.exports.update = async (req, res) => {
  * @access  Private
  */
 module.exports.get_all = async (req, res) => {
- 
+  const redis = await rediConnection.getClient();
+
   // pagination element
   const pageNumber = parseInt(req.query.pageNumber, 10);
   const pageSize = parseInt(req.query.pageSize, 10);
@@ -235,6 +235,16 @@ module.exports.get_all = async (req, res) => {
   total = total.rows[0].count;
   posts = posts.rows;
 
+  if (req.query.search === undefined && req.query.state === undefined) {
+    redis.hSet(
+      req.redisHashTable,
+      req.redisHashTablePath,
+      JSON.stringify({
+        total: parseInt(total, 10),
+        posts,
+      })
+    );
+  }
   res.status(200).json({
     total: parseInt(total, 10),
     posts,
@@ -312,7 +322,6 @@ module.exports.get_all_by_tag_id = async (req, res) => {
 module.exports.delete = async (req, res) => {
   let result;
   try {
-
     await dbConnection.query("BEGIN");
 
     await dbConnection.query(postSqlQuerys.DELETE_POST_TAG_REL_BY_POST_ID, [
@@ -328,13 +337,11 @@ module.exports.delete = async (req, res) => {
       req.params.id,
     ]);
 
-
     result = await dbConnection.query(postSqlQuerys.DELETE_POST_BY_ID, [
       req.params.id,
     ]);
 
     await dbConnection.query("COMMIT");
-
   } catch (err) {
     console.log(err.message);
     await dbConnection.query("ROLLBACK");
@@ -352,16 +359,13 @@ module.exports.delete = async (req, res) => {
 //                                love post
 
 module.exports.love = async (req, res) => {
-
-
-  let result = await dbConnection.query(postSqlQuerys.CHECK_POST_ALREADY_LOVED,[
-    req.user._id,
-    req.params.id,
-  ]);
+  let result = await dbConnection.query(
+    postSqlQuerys.CHECK_POST_ALREADY_LOVED,
+    [req.user._id, req.params.id]
+  );
 
   if (result.rows[0].exists === true)
-    return res.status(400).json({"message" : "Post has already been loved."})
-  
+    return res.status(400).json({ message: "Post has already been loved." });
 
   await dbConnection.query(postSqlQuerys.INSERT_POST_LOVE, [
     req.user._id,
@@ -391,7 +395,6 @@ module.exports.unLove = async (req, res) => {
   res.status(200).json({ message: "Be unloved" });
 };
 
-
 //                              SAVED POST
 
 /**
@@ -399,20 +402,19 @@ module.exports.unLove = async (req, res) => {
  * @route   Post /api/v1/post/save/
  * @access  Private [auth]
  */
- module.exports.savePost = async (req, res) => {
+module.exports.savePost = async (req, res) => {
+  let isExist = await dbConnection.query(
+    postSqlQuerys.CHECK_POST_ALREADY_SAVED,
+    [req.user._id, req.params.id]
+  );
 
-  let isExist = await dbConnection.query(postSqlQuerys.CHECK_POST_ALREADY_SAVED,[
+  if (isExist.rows[0].exists === true)
+    return res.status(400).json({ message: "Post has already been saved." });
+
+  let result = await dbConnection.query(postSqlQuerys.SAVE_POST, [
     req.user._id,
     req.params.id,
   ]);
-
-  if (isExist.rows[0].exists === true)
-    return res.status(400).json({"message" : "Post has already been saved."})
-  
-  let result = await dbConnection.query(
-    postSqlQuerys.SAVE_POST,
-    [req.user._id, req.params.id]
-  );
 
   if (result.rowCount == 0)
     return res
@@ -455,8 +457,7 @@ module.exports.getAllSavedPosts = async (req, res) => {
  * @access  Private [auth]
  */
 module.exports.unSavePost = async (req, res) => {
-    
-  console.log(req.params.id)
+  console.log(req.params.id);
   const result = await dbConnection.query(postSqlQuerys.UN_SAVE_POST, [
     req.user._id,
     req.params.id,
