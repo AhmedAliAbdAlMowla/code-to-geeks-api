@@ -283,3 +283,14 @@ module.exports.linkedinSignIn  = {
   },
   tags: ['Auth']
 }
+
+
+module.exports.validateToken ={
+
+  "summary": "Check if token  is valid or not valid",
+        "operationId": "token",
+        "description": "you can use this end point to check if token  is valid or not valid",
+        "parameters": [],
+        "responses": { "200": { "description": "", "headers": {} } },
+        "tags": ["Auth"]
+}
