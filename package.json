@@ -4,8 +4,8 @@
   "description": "codetogeeks rest api",
   "main": "app.js",
   "scripts": {
-    "start:dev": " set NODE_ENV=development&& nodemon",
-    "start:prod": " set NODE_ENV=production&& node src/server.js",
+    "start:dev": " export NODE_ENV=development&& nodemon",
+    "start:prod": " export NODE_ENV=production&& node src/server.js",
     "start": "npm run start:prod"
   },
   "author": "Ahmed Ali",

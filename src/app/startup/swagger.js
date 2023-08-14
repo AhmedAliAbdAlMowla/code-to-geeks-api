@@ -1,5 +1,5 @@
 const swaggerUi = require("swagger-ui-express");
-const swaggerDocument = require("../../docs/swagger");
+const swaggerDocument = require("../../../docs/swagger");
 
 module.exports = (app) => {
 if (process.env.NODE_ENV.trim() === "development")
